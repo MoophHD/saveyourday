@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -20,9 +20,9 @@ var LocalTimeLine = function (_React$Component) {
   }
 
   _createClass(LocalTimeLine, [{
-    key: 'render',
+    key: "render",
     value: function render() {
-      return React.createElement('div', null);
+      return React.createElement("div", null);
     }
   }]);
 
@@ -39,52 +39,159 @@ var GlobalTimeLine = function (_React$Component2) {
   }
 
   _createClass(GlobalTimeLine, [{
-    key: 'render',
+    key: "render",
     value: function render() {
-      return React.createElement('div', null);
+      return React.createElement("div", null);
     }
   }]);
 
   return GlobalTimeLine;
 }(React.Component);
 
-var View = function (_React$Component3) {
-  _inherits(View, _React$Component3);
+var TimeLine = function (_React$Component3) {
+  _inherits(TimeLine, _React$Component3);
+
+  function TimeLine() {
+    _classCallCheck(this, TimeLine);
+
+    return _possibleConstructorReturn(this, (TimeLine.__proto__ || Object.getPrototypeOf(TimeLine)).apply(this, arguments));
+  }
+
+  _createClass(TimeLine, [{
+    key: "render",
+    value: function render() {
+      return React.createElement(
+        "div",
+        null,
+        React.createElement(LocalTimeLine, null),
+        React.createElement(GlobalTimeLine, null)
+      );
+    }
+  }]);
+
+  return TimeLine;
+}(React.Component);
+
+var TimeCell = function (_React$Component4) {
+  _inherits(TimeCell, _React$Component4);
+
+  function TimeCell(props) {
+    _classCallCheck(this, TimeCell);
+
+    return _possibleConstructorReturn(this, (TimeCell.__proto__ || Object.getPrototypeOf(TimeCell)).call(this, props));
+  }
+
+  _createClass(TimeCell, [{
+    key: "render",
+    value: function render() {
+      var tag = Object.keys(this.props.startPart)[0];
+
+      var finishPart = this.props.finishPart ? React.createElement(
+        "div",
+        { className: "finishPart timePt" },
+        React.createElement(
+          "div",
+          null,
+          tag
+        ),
+        React.createElement(
+          "div",
+          null,
+          this.props.finishPart[tag]
+        )
+      ) : React.createElement("div", { className: "blank" });
+
+      return React.createElement(
+        "div",
+        { className: "cell" },
+        React.createElement(
+          "div",
+          { className: "startPart timePt" },
+          React.createElement(
+            "div",
+            null,
+            tag
+          ),
+          React.createElement(
+            "div",
+            null,
+            this.props.startPart[tag]
+          )
+        ),
+        finishPart,
+        React.createElement("div", { className: "cellSb" })
+      );
+    }
+  }]);
+
+  return TimeCell;
+}(React.Component);
+
+var TimeUl = function (_React$Component5) {
+  _inherits(TimeUl, _React$Component5);
+
+  function TimeUl(props) {
+    _classCallCheck(this, TimeUl);
+
+    return _possibleConstructorReturn(this, (TimeUl.__proto__ || Object.getPrototypeOf(TimeUl)).call(this, props));
+  }
+
+  _createClass(TimeUl, [{
+    key: "render",
+    value: function render() {
+      var initialList = this.props.list;
+      var listItems = [];
+      var blank = React.createElement("div", null);
+
+      for (var i = 0, len = initialList.length; i < len; i += 2) {
+        var startPart = initialList[i];
+
+        var finishPart = len - i == 1 ? blank : initialList[i + 1];
+        console.log(len - 1);
+        console.log(finishPart);
+        listItems.push(React.createElement(TimeCell, {
+          key: '_timeCellId' + i,
+          startPart: startPart,
+          finishPart: finishPart
+        }));
+      }
+
+      return React.createElement(
+        "div",
+        { className: "timeUi" },
+        listItems
+      );
+    }
+  }]);
+
+  return TimeUl;
+}(React.Component);
+
+var View = function (_React$Component6) {
+  _inherits(View, _React$Component6);
 
   function View(props) {
     _classCallCheck(this, View);
 
-    var _this3 = _possibleConstructorReturn(this, (View.__proto__ || Object.getPrototypeOf(View)).call(this, props));
+    var _this6 = _possibleConstructorReturn(this, (View.__proto__ || Object.getPrototypeOf(View)).call(this, props));
 
-    _this3.state = {
+    _this6.state = {
+      isLineMode: false,
       zoom: 1
     };
-    return _this3;
+    return _this6;
   }
 
   _createClass(View, [{
-    key: 'render',
+    key: "render",
     value: function render() {
-      var listItems = this.props.listElems.map(function (curr, ind) {
-        var key = Object.keys(curr)[0];
-        console.log(curr);
-        return React.createElement(
-          'li',
-          { className: 'timeSlice', key: '_id' + curr[key] + '' + ind },
-          key + ' : ' + curr[key]
-        );
-      });
+
+      var viewMode = this.state.isLineMode ? React.createElement(TimeLine, null) : React.createElement(TimeUl, { list: this.props.listElems });
 
       return React.createElement(
-        'div',
-        null,
-        React.createElement(LocalTimeLine, null),
-        React.createElement(GlobalTimeLine, null),
-        React.createElement(
-          'ul',
-          null,
-          listItems
-        )
+        "div",
+        { className: "view" },
+        viewMode
       );
     }
   }]);
@@ -92,43 +199,45 @@ var View = function (_React$Component3) {
   return View;
 }(React.Component);
 
-var TagForm = function (_React$Component4) {
-  _inherits(TagForm, _React$Component4);
+var TagForm = function (_React$Component7) {
+  _inherits(TagForm, _React$Component7);
 
   function TagForm(props) {
     _classCallCheck(this, TagForm);
 
-    var _this4 = _possibleConstructorReturn(this, (TagForm.__proto__ || Object.getPrototypeOf(TagForm)).call(this, props));
+    var _this7 = _possibleConstructorReturn(this, (TagForm.__proto__ || Object.getPrototypeOf(TagForm)).call(this, props));
 
-    _this4.state = {
+    _this7.state = {
       value: ''
     };
-    return _this4;
+    return _this7;
   }
 
   _createClass(TagForm, [{
-    key: 'handleChange',
+    key: "handleChange",
     value: function handleChange(event) {
       this.setState({ value: event.target.value });
     }
   }, {
-    key: 'handleSubmit',
+    key: "handleSubmit",
     value: function handleSubmit(event) {
       event.preventDefault();
       this.props.onSubmit(this.state.value);
     }
   }, {
-    key: 'render',
+    key: "render",
     value: function render() {
-      var _this5 = this;
+      var _this8 = this;
 
       return React.createElement(
-        'form',
+        "form",
         { onSubmit: function onSubmit(e) {
-            return _this5.handleSubmit(e);
+            return _this8.handleSubmit(e);
           } },
-        React.createElement('input', { type: 'text', value: this.state.value, onChange: function onChange(e) {
-            return _this5.handleChange(e);
+        React.createElement("input", { type: "text", value: this.state.value, onBlur: function onBlur(e) {
+            return _this8.handleSubmit(e);
+          }, onChange: function onChange(e) {
+            return _this8.handleChange(e);
           } })
       );
     }
@@ -137,8 +246,8 @@ var TagForm = function (_React$Component4) {
   return TagForm;
 }(React.Component);
 
-var Tags = function (_React$Component5) {
-  _inherits(Tags, _React$Component5);
+var Tags = function (_React$Component8) {
+  _inherits(Tags, _React$Component8);
 
   function Tags(props) {
     _classCallCheck(this, Tags);
@@ -147,20 +256,20 @@ var Tags = function (_React$Component5) {
   }
 
   _createClass(Tags, [{
-    key: 'render',
+    key: "render",
     value: function render() {
-      var _this7 = this;
+      var _this10 = this;
 
       return React.createElement(
-        'div',
-        { className: 'tagPanel' },
+        "div",
+        { className: "tagPanel" },
         React.createElement(
-          'h2',
+          "h2",
           null,
-          'Add tag'
+          "Add tag"
         ),
         React.createElement(TagForm, { onSubmit: function onSubmit(v) {
-            return _this7.props.onTagSubmit(v);
+            return _this10.props.onTagSubmit(v);
           } })
       );
     }
@@ -169,8 +278,8 @@ var Tags = function (_React$Component5) {
   return Tags;
 }(React.Component);
 
-var Control = function (_React$Component6) {
-  _inherits(Control, _React$Component6);
+var Control = function (_React$Component9) {
+  _inherits(Control, _React$Component9);
 
   function Control() {
     _classCallCheck(this, Control);
@@ -179,17 +288,19 @@ var Control = function (_React$Component6) {
   }
 
   _createClass(Control, [{
-    key: 'componentDidMount',
+    key: "componentDidMount",
     value: function componentDidMount() {
       var now = new Date();
       this.openingTime = now.getHours().toString() + ' : ' + now.getMinutes().toString();
     }
   }, {
-    key: 'render',
+    key: "render",
     value: function render() {
-      var _this9 = this;
+      var _this12 = this;
 
       var icon = this.props.currentState ? "fa-pause" : "fa-play";
+      var btnStr = this.props.currentState ? 'Stop' : 'Start';
+
       var now = new Date();
 
       var hr = now.getHours();
@@ -197,26 +308,26 @@ var Control = function (_React$Component6) {
 
       var currentDate = formatDate(hr, mn);
       return React.createElement(
-        'div',
-        { className: 'controlPanel' },
+        "div",
+        { className: "controlPanel" },
         React.createElement(Tags, { onTagSubmit: function onTagSubmit(v) {
-            return _this9.props.onTagChange(v);
+            return _this12.props.onTagChange(v);
           } }),
         React.createElement(
-          'div',
-          { className: 'controlStart' },
+          "div",
+          { className: "controlStart" },
           React.createElement(
-            'button',
-            { onClick: this.props.onStartButtonClick, className: 'controlStartBtn' },
-            React.createElement('i', { className: "fa " + icon, 'aria-hidden': 'true' }),
-            'Start'
+            "button",
+            { onClick: this.props.onStartButtonClick, className: "controlStartBtn" },
+            React.createElement("i", { className: "fa " + icon, "aria-hidden": "true" }),
+            btnStr
           )
         ),
         React.createElement(
-          'div',
-          { className: 'startTime' },
+          "div",
+          { className: "startTime" },
           React.createElement(
-            'h2',
+            "h2",
             null,
             currentDate
           )
@@ -228,31 +339,31 @@ var Control = function (_React$Component6) {
   return Control;
 }(React.Component);
 
-var App = function (_React$Component7) {
-  _inherits(App, _React$Component7);
+var App = function (_React$Component10) {
+  _inherits(App, _React$Component10);
 
   function App(props) {
     _classCallCheck(this, App);
 
-    var _this10 = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
+    var _this13 = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
 
-    _this10.state = {
+    _this13.state = {
       isActive: false,
       currentTag: 'None',
       history: []
     };
-    return _this10;
+    return _this13;
   }
 
   _createClass(App, [{
-    key: 'setTag',
+    key: "setTag",
     value: function setTag(tag) {
       this.setState({
         currentTag: tag
       });
     }
   }, {
-    key: 'startActivity',
+    key: "startActivity",
     value: function startActivity() {
       alert('1');
       var tag = this.state.currentTag;
@@ -263,7 +374,7 @@ var App = function (_React$Component7) {
       });
     }
   }, {
-    key: 'finishActivity',
+    key: "finishActivity",
     value: function finishActivity() {
 
       var tag = this.state.currentTag;
@@ -275,7 +386,7 @@ var App = function (_React$Component7) {
       });
     }
   }, {
-    key: 'toggleState',
+    key: "toggleState",
     value: function toggleState() {
       var currentState = this.state.isActive;
 
@@ -288,18 +399,18 @@ var App = function (_React$Component7) {
       });
     }
   }, {
-    key: 'render',
+    key: "render",
     value: function render() {
-      var _this11 = this;
+      var _this14 = this;
 
       return React.createElement(
-        'div',
-        { className: 'wrapper' },
+        "div",
+        { className: "wrapper" },
         React.createElement(Control, { onTagChange: function onTagChange(v) {
-            return _this11.setTag(v);
+            return _this14.setTag(v);
           },
           onStartButtonClick: function onStartButtonClick() {
-            return _this11.toggleState();
+            return _this14.toggleState();
           },
           currentState: this.state.isActive }),
         React.createElement(View, { listElems: this.state.history })
@@ -313,6 +424,11 @@ var App = function (_React$Component7) {
 var tags = ['JS', 'Drawing', 'English', 'Swedish'];
 
 ReactDOM.render(React.createElement(App, { tagList: tags }), document.getElementById('root'));
+
+var global = {
+  cellId: 0,
+  sliceId: 0
+};
 
 function formatDate(h, m, s) {
   h = h > 9 ? h.toString() : '0' + h.toString();

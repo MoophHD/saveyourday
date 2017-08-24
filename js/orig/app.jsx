@@ -14,27 +14,94 @@ class GlobalTimeLine extends React.Component {
   }
 }
 
+class TimeLine extends React.Component {
+  render() {
+    return(
+      <div>
+        <LocalTimeLine />
+        <GlobalTimeLine />
+      </div>
+    )
+  }
+}
+
+class TimeCell extends React.Component {
+  constructor(props) {
+    super(props);
+  } 
+
+  render() {
+    let tag = Object.keys(this.props.startPart)[0];
+
+    let finishPart = this.props.finishPart  ? <div className="finishPart timePt">
+                                                <div>{tag}</div>
+                                                <div>{this.props.finishPart[tag]}</div>
+                                              </div> 
+    : <div className="blank"></div>
+
+    return(
+      <div className="cell" >
+        <div className="startPart timePt">
+          <div>{tag}</div>
+          <div>{this.props.startPart[tag]}</div>
+        </div>
+        {finishPart}
+        <div className="cellSb"></div>
+      </div>
+    )
+  }
+}
+
+class TimeUl extends React.Component {
+  constructor(props) {
+    super(props);
+  } 
+  
+  render() {
+    let initialList = this.props.list;
+    let listItems = [];
+    let blank = <div></div>;
+
+    for (let i = 0, len = initialList.length; i < len; i += 2) {
+      let startPart = initialList[i];
+
+      let finishPart = len-i == 1 ? blank : initialList[i+1];
+      console.log(len-1);
+      console.log(finishPart);
+      listItems.push(<TimeCell
+        key={'_timeCellId'+i}
+        startPart={startPart}
+        finishPart={finishPart}
+      />)
+    }
+
+    return(
+      <div className="timeUi">
+        {listItems}
+      </div>
+    )
+  }  
+}
+
+
 
 class View extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      isLineMode: false,
       zoom: 1
     }
   }
 
   render() {
-    let listItems = this.props.listElems.map((curr, ind) => {
-      let key = Object.keys(curr)[0];
-      console.log(curr);
-      return <li className="timeSlice" key={'_id' + curr[key] + '' + ind}>{key+' : '+curr[key]}</li>
-  })
+
+
+  let viewMode = this.state.isLineMode ? <TimeLine /> : <TimeUl list={this.props.listElems} />
 
     return(
-      <div>
-        <LocalTimeLine />
-        <GlobalTimeLine />
-        <ul>{listItems}</ul>
+      <div className="view">
+        {viewMode}
       </div>
     )
   }
@@ -50,7 +117,6 @@ class TagForm extends React.Component {
 
   handleChange(event) {
     this.setState({value: event.target.value});
-
   }
 
   handleSubmit(event) {
@@ -61,7 +127,7 @@ class TagForm extends React.Component {
   render() {
     return(
       <form onSubmit={(e) => this.handleSubmit(e)}>
-        <input type="text" value={this.state.value} onChange={(e) => this.handleChange(e)} />
+        <input type="text" value={this.state.value} onBlur={(e) => this.handleSubmit(e)} onChange={(e) => this.handleChange(e)} />
       </form>
     )
   }
@@ -91,18 +157,26 @@ class Control extends React.Component {
 
   render() {
     let icon = this.props.currentState ? "fa-pause" : "fa-play";
+    let btnStr =  this.props.currentState ? 'Stop' : 'Start';
+
     let now = new Date();
     
     let hr = now.getHours();
     let mn = now.getMinutes();
 
+   
 
     let currentDate = formatDate(hr, mn);
     return(
 
       <div className="controlPanel">
         <Tags onTagSubmit={(v) => this.props.onTagChange(v)}/>
-        <div className="controlStart"><button onClick={this.props.onStartButtonClick}className="controlStartBtn"><i className={"fa " + icon} aria-hidden="true"></i>Start</button></div>
+        <div className="controlStart">
+          <button onClick={this.props.onStartButtonClick}className="controlStartBtn">
+            <i className={"fa " + icon} aria-hidden="true"></i>
+            {btnStr}
+          </button>
+        </div>
         <div className="startTime"><h2>{currentDate}</h2></div>
       </div>
     )
@@ -191,6 +265,11 @@ ReactDOM.render(
   <App tagList={tags}/>,
   document.getElementById('root')
 );
+
+let global = {
+  cellId: 0,
+  sliceId: 0
+}
 
 function formatDate(h, m, s) {
   h = h > 9 ? h.toString() : '0' + h.toString();

@@ -91,9 +91,15 @@ body {
 }
 
 .timeSlice {
-  display: inline-block;
+.cell {
+  display: grid;
+  grid-template-columns: 25% 25% 50%;
+  grid-template-rows: repeat(auto-fill, 75px);
+  border-bottom: 2px solid #389C90;
+}
+
+.timePt {
   font-size: 1.25em;
-  width: 50%;
   text-align: center;
-  margin-bottom: 25px;
+  padding: 13px 0;
 }
