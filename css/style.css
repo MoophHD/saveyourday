@@ -90,7 +90,6 @@ body {
   margin-right: 10px;
 }
 
-.timeSlice {
 .cell {
   display: grid;
   grid-template-columns: 25% 25% 50%;
