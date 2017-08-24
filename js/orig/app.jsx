@@ -25,6 +25,79 @@ class TimeLine extends React.Component {
   }
 }
 
+class CurrentWorkTime extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      workTime: 0,
+      calls: 0
+    }
+  }
+
+  componentDidMount() {
+    this.calculateWorkTime();
+    this.timerID = setInterval(
+      () => this.calculateWorkTime(),
+      1000 //3600000
+    );
+  }
+    
+  componentWillUnmount() {
+    clearInterval(this.timerID);
+  }
+
+  calculateWorkTime() {
+    let result = [];
+
+    let startTimeSecs = this.dateSecConverter(this.props.startTime);    
+    let finishTimeSecs = this.props.finishTime ? this.dateSecConverter(this.props.finishTime) : null;
+    let now = new Date();
+    let nowSecs = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+
+    result = finishTimeSecs ? (finishTimeSecs - startTimeSecs) : (nowSecs - startTimeSecs); 
+
+    if (this.props.finishTime && this.props.finishTime[0] - this.props.startTime[0] < 0) {
+      result += 86400; 
+    }
+
+    let convResult = this.dateSecConverter(result);
+    convResult = formatDate(convResult[0], convResult[1], convResult[2]).split(':').join(' : ');
+    
+  
+    this.setState({workTime: convResult});
+  }
+
+    dateSecConverter(value) {
+      let result;
+
+      if(typeof value == 'number') {
+        result = [];
+        console.log(value);
+        result.push(value/3600|0);
+        result.push(value/60|0);
+        result.push(value%60);
+
+        return result;
+      } else {
+        result = 0;
+
+        result += value[0] * 3600;
+        result += value[1] * 60;
+        result += parseInt(value[2]);
+
+        return result;
+
+      }
+    }
+
+  render() {
+    if (this.props.finishTime) clearInterval(this.timerID);
+    return (
+      <div>{this.state.workTime}</div>
+    )
+  }
+}
+
 class TimeCell extends React.Component {
   constructor(props) {
     super(props);
@@ -33,20 +106,31 @@ class TimeCell extends React.Component {
   render() {
     let tag = Object.keys(this.props.startPart)[0];
 
-    let finishPart = this.props.finishPart  ? <div className="finishPart timePt">
-                                                <div>{tag}</div>
-                                                <div>{this.props.finishPart[tag]}</div>
-                                              </div> 
-    : <div className="blank"></div>
+    let startTime = this.props.startPart[tag].split(':');
+    let finishTime = this.props.finishPart[tag] ? this.props.finishPart[tag].split(':') : null;
+
+    let formattedStartTime = startTime.slice(0, 2).join(' : ');
+    let formattedFinishTime = finishTime ? finishTime.slice(0, 2).join(' : ') : '';
 
     return(
       <div className="cell" >
         <div className="startPart timePt">
-          <div>{tag}</div>
-          <div>{this.props.startPart[tag]}</div>
+          <div>Start</div>
+          <div>{formattedStartTime}</div>
         </div>
-        {finishPart}
-        <div className="cellSb"></div>
+
+        <div className="finishPart timePt">
+            <div>Finish</div>
+            <div>{formattedFinishTime}</div>
+          </div> 
+
+        <div className="cellSb">
+          <div>{tag}</div>
+          <CurrentWorkTime 
+            startTime={startTime}
+            finishTime={finishTime}
+          />
+        </div>
       </div>
     )
   }
@@ -66,9 +150,7 @@ class TimeUl extends React.Component {
       let startPart = initialList[i];
 
       let finishPart = len-i == 1 ? blank : initialList[i+1];
-      console.log(len-1);
-      console.log(finishPart);
-      listItems.push(<TimeCell
+      listItems.unshift(<TimeCell
         key={'_timeCellId'+i}
         startPart={startPart}
         finishPart={finishPart}

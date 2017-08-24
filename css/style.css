@@ -102,3 +102,12 @@ body {
   text-align: center;
   padding: 13px 0;
 }
+
+.cellSb div {
+  display: inline-block;
+  font-size: 2em;
+}
+
+.cellSb div:first-child {
+  margin-right: 50px;
+}
