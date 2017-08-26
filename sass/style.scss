@@ -1,6 +1,7 @@
 $main-black: #202121;
 $main-white: #F4F7F6;
 $main-green: #389C90;
+$main-red: #FB9E5A;
 
 body {
     background-color: #F4F7F6;
@@ -16,11 +17,6 @@ body {
     margin-left: auto;
 }
 
-.test {
-    background-color: tomato;
-    height: 250px;
-    width: 250px;
-}
 
 .controlPanel {
     display: grid;
@@ -99,9 +95,10 @@ body {
 
 .cell {
     display: grid;
-    grid-template-columns: 25% 25% 50%;
+    grid-template-columns: 70% 15% 15%;
     grid-template-rows: repeat(auto-fill, 75px);
-    border-bottom: 2px solid $main-green;
+    background-color: $main-green;
+    color: $main-white;
 }
 
 .timePt {
@@ -110,11 +107,33 @@ body {
     padding: 13px 0;
 }
 
+.cellSb {
+    text-align: center;
+    display: grid;
+    padding-left: 100px;
+    grid-template-columns: 33% 66%;
+    grid-template-rows: 100%;
+}
+
 .cellSb div{
     display: inline-block;
     font-size: 2em;
+    padding: 20px 0;
 }
 
 .cellSb div:first-child {
-    margin-right: 50px;
+
+}
+
+.subCell {
+    height: 35px;
+    font-size: 1.25em;
+    text-align: center;
+}
+
+.subCell p{
+    margin: 0;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%); 
 }

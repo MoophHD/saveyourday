@@ -81,8 +81,7 @@ var CurrentWorkTime = function (_React$Component4) {
     var _this4 = _possibleConstructorReturn(this, (CurrentWorkTime.__proto__ || Object.getPrototypeOf(CurrentWorkTime)).call(this, props));
 
     _this4.state = {
-      workTime: 0,
-      calls: 0
+      workTime: 0
     };
     return _this4;
   }
@@ -108,8 +107,8 @@ var CurrentWorkTime = function (_React$Component4) {
     value: function calculateWorkTime() {
       var result = [];
 
-      var startTimeSecs = this.dateSecConverter(this.props.startTime);
-      var finishTimeSecs = this.props.finishTime ? this.dateSecConverter(this.props.finishTime) : null;
+      var startTimeSecs = dateSecConverter(this.props.startTime);
+      var finishTimeSecs = this.props.finishTime ? dateSecConverter(this.props.finishTime) : null;
       var now = new Date();
       var nowSecs = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
 
@@ -119,33 +118,10 @@ var CurrentWorkTime = function (_React$Component4) {
         result += 86400;
       }
 
-      var convResult = this.dateSecConverter(result);
+      var convResult = dateSecConverter(result);
       convResult = formatDate(convResult[0], convResult[1], convResult[2]).split(':').join(' : ');
 
       this.setState({ workTime: convResult });
-    }
-  }, {
-    key: 'dateSecConverter',
-    value: function dateSecConverter(value) {
-      var result = void 0;
-
-      if (typeof value == 'number') {
-        result = [];
-        console.log(value);
-        result.push(value / 3600 | 0);
-        result.push(value / 60 | 0);
-        result.push(value % 60);
-
-        return result;
-      } else {
-        result = 0;
-
-        result += value[0] * 3600;
-        result += value[1] * 60;
-        result += parseInt(value[2]);
-
-        return result;
-      }
     }
   }, {
     key: 'render',
@@ -162,8 +138,80 @@ var CurrentWorkTime = function (_React$Component4) {
   return CurrentWorkTime;
 }(React.Component);
 
-var TimeCell = function (_React$Component5) {
-  _inherits(TimeCell, _React$Component5);
+var SubTimeCell = function (_React$Component5) {
+  _inherits(SubTimeCell, _React$Component5);
+
+  function SubTimeCell(props) {
+    _classCallCheck(this, SubTimeCell);
+
+    var _this6 = _possibleConstructorReturn(this, (SubTimeCell.__proto__ || Object.getPrototypeOf(SubTimeCell)).call(this, props));
+
+    _this6.state = {
+      break: ''
+    };
+    return _this6;
+  }
+
+  _createClass(SubTimeCell, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this7 = this;
+
+      this.setState({
+        break: this.calculateBreakTime()
+      });
+
+      this.timerID = setInterval(function () {
+        if (_this7.state.break != '' && globalIsActive) {
+          clearInterval(_this7.timerID);return;
+        };
+        _this7.setState({
+          break: _this7.calculateBreakTime()
+        });
+      }, 1000);
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      clearInterval(this.timerID);
+    }
+  }, {
+    key: 'calculateBreakTime',
+    value: function calculateBreakTime() {
+      if (!this.props.lastFinishActivity) return '';
+
+      var lastActTimeSecs = dateSecConverter(this.props.lastFinishActivity);
+
+      var now = new Date();
+      var nowSecs = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+      var breakTime = dateSecConverter(nowSecs - lastActTimeSecs);
+      breakTime = formatDate(breakTime[0], breakTime[1], breakTime[2]).split(':');
+
+      if (breakTime[0] == '00') breakTime.shift();
+
+      return breakTime.join(' : ');
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      //let breakLabel = this.state.break ? 'Break : ' : '';
+      return React.createElement(
+        'div',
+        { className: 'subCell' },
+        React.createElement(
+          'p',
+          null,
+          this.state.break
+        )
+      );
+    }
+  }]);
+
+  return SubTimeCell;
+}(React.Component);
+
+var TimeCell = function (_React$Component6) {
+  _inherits(TimeCell, _React$Component6);
 
   function TimeCell(props) {
     _classCallCheck(this, TimeCell);
@@ -181,50 +229,54 @@ var TimeCell = function (_React$Component5) {
 
       var formattedStartTime = startTime.slice(0, 2).join(' : ');
       var formattedFinishTime = finishTime ? finishTime.slice(0, 2).join(' : ') : '';
-
       return React.createElement(
         'div',
-        { className: 'cell' },
+        { className: 'cellWrapper' },
+        React.createElement(SubTimeCell, { parentCellId: this.props.id, lastFinishActivity: finishTime }),
         React.createElement(
           'div',
-          { className: 'startPart timePt' },
+          { className: 'cell' },
           React.createElement(
             'div',
-            null,
-            'Start'
+            { className: 'cellSb' },
+            React.createElement(
+              'div',
+              null,
+              tag
+            ),
+            React.createElement(CurrentWorkTime, {
+              startTime: startTime,
+              finishTime: finishTime
+            })
           ),
           React.createElement(
             'div',
-            null,
-            formattedStartTime
+            { className: 'startPart timePt' },
+            React.createElement(
+              'div',
+              null,
+              'Start'
+            ),
+            React.createElement(
+              'div',
+              null,
+              formattedStartTime
+            )
+          ),
+          React.createElement(
+            'div',
+            { className: 'finishPart timePt' },
+            React.createElement(
+              'div',
+              null,
+              'Finish'
+            ),
+            React.createElement(
+              'div',
+              null,
+              formattedFinishTime
+            )
           )
-        ),
-        React.createElement(
-          'div',
-          { className: 'finishPart timePt' },
-          React.createElement(
-            'div',
-            null,
-            'Finish'
-          ),
-          React.createElement(
-            'div',
-            null,
-            formattedFinishTime
-          )
-        ),
-        React.createElement(
-          'div',
-          { className: 'cellSb' },
-          React.createElement(
-            'div',
-            null,
-            tag
-          ),
-          React.createElement(CurrentWorkTime, {
-            startTime: startTime,
-            finishTime: finishTime
-          })
         )
       );
     }
@@ -233,8 +285,8 @@ var TimeCell = function (_React$Component5) {
   return TimeCell;
 }(React.Component);
 
-var TimeUl = function (_React$Component6) {
-  _inherits(TimeUl, _React$Component6);
+var TimeUl = function (_React$Component7) {
+  _inherits(TimeUl, _React$Component7);
 
   function TimeUl(props) {
     _classCallCheck(this, TimeUl);
@@ -255,6 +307,7 @@ var TimeUl = function (_React$Component6) {
         var finishPart = len - i == 1 ? blank : initialList[i + 1];
         listItems.unshift(React.createElement(TimeCell, {
           key: '_timeCellId' + i,
+          id: 'id' + i,
           startPart: startPart,
           finishPart: finishPart
         }));
@@ -271,19 +324,19 @@ var TimeUl = function (_React$Component6) {
   return TimeUl;
 }(React.Component);
 
-var View = function (_React$Component7) {
-  _inherits(View, _React$Component7);
+var View = function (_React$Component8) {
+  _inherits(View, _React$Component8);
 
   function View(props) {
     _classCallCheck(this, View);
 
-    var _this8 = _possibleConstructorReturn(this, (View.__proto__ || Object.getPrototypeOf(View)).call(this, props));
+    var _this10 = _possibleConstructorReturn(this, (View.__proto__ || Object.getPrototypeOf(View)).call(this, props));
 
-    _this8.state = {
+    _this10.state = {
       isLineMode: false,
       zoom: 1
     };
-    return _this8;
+    return _this10;
   }
 
   _createClass(View, [{
@@ -303,18 +356,18 @@ var View = function (_React$Component7) {
   return View;
 }(React.Component);
 
-var TagForm = function (_React$Component8) {
-  _inherits(TagForm, _React$Component8);
+var TagForm = function (_React$Component9) {
+  _inherits(TagForm, _React$Component9);
 
   function TagForm(props) {
     _classCallCheck(this, TagForm);
 
-    var _this9 = _possibleConstructorReturn(this, (TagForm.__proto__ || Object.getPrototypeOf(TagForm)).call(this, props));
+    var _this11 = _possibleConstructorReturn(this, (TagForm.__proto__ || Object.getPrototypeOf(TagForm)).call(this, props));
 
-    _this9.state = {
+    _this11.state = {
       value: ''
     };
-    return _this9;
+    return _this11;
   }
 
   _createClass(TagForm, [{
@@ -331,17 +384,17 @@ var TagForm = function (_React$Component8) {
   }, {
     key: 'render',
     value: function render() {
-      var _this10 = this;
+      var _this12 = this;
 
       return React.createElement(
         'form',
         { onSubmit: function onSubmit(e) {
-            return _this10.handleSubmit(e);
+            return _this12.handleSubmit(e);
           } },
         React.createElement('input', { type: 'text', value: this.state.value, onBlur: function onBlur(e) {
-            return _this10.handleSubmit(e);
+            return _this12.handleSubmit(e);
           }, onChange: function onChange(e) {
-            return _this10.handleChange(e);
+            return _this12.handleChange(e);
           } })
       );
     }
@@ -350,8 +403,8 @@ var TagForm = function (_React$Component8) {
   return TagForm;
 }(React.Component);
 
-var Tags = function (_React$Component9) {
-  _inherits(Tags, _React$Component9);
+var Tags = function (_React$Component10) {
+  _inherits(Tags, _React$Component10);
 
   function Tags(props) {
     _classCallCheck(this, Tags);
@@ -362,7 +415,7 @@ var Tags = function (_React$Component9) {
   _createClass(Tags, [{
     key: 'render',
     value: function render() {
-      var _this12 = this;
+      var _this14 = this;
 
       return React.createElement(
         'div',
@@ -373,7 +426,7 @@ var Tags = function (_React$Component9) {
           'Add tag'
         ),
         React.createElement(TagForm, { onSubmit: function onSubmit(v) {
-            return _this12.props.onTagSubmit(v);
+            return _this14.props.onTagSubmit(v);
           } })
       );
     }
@@ -382,8 +435,8 @@ var Tags = function (_React$Component9) {
   return Tags;
 }(React.Component);
 
-var Control = function (_React$Component10) {
-  _inherits(Control, _React$Component10);
+var Control = function (_React$Component11) {
+  _inherits(Control, _React$Component11);
 
   function Control() {
     _classCallCheck(this, Control);
@@ -400,7 +453,7 @@ var Control = function (_React$Component10) {
   }, {
     key: 'render',
     value: function render() {
-      var _this14 = this;
+      var _this16 = this;
 
       var icon = this.props.currentState ? "fa-pause" : "fa-play";
       var btnStr = this.props.currentState ? 'Stop' : 'Start';
@@ -415,7 +468,7 @@ var Control = function (_React$Component10) {
         'div',
         { className: 'controlPanel' },
         React.createElement(Tags, { onTagSubmit: function onTagSubmit(v) {
-            return _this14.props.onTagChange(v);
+            return _this16.props.onTagChange(v);
           } }),
         React.createElement(
           'div',
@@ -433,7 +486,7 @@ var Control = function (_React$Component10) {
           React.createElement(
             'h2',
             null,
-            currentDate
+            this.props.currentTag
           )
         )
       );
@@ -443,20 +496,20 @@ var Control = function (_React$Component10) {
   return Control;
 }(React.Component);
 
-var App = function (_React$Component11) {
-  _inherits(App, _React$Component11);
+var App = function (_React$Component12) {
+  _inherits(App, _React$Component12);
 
   function App(props) {
     _classCallCheck(this, App);
 
-    var _this15 = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
+    var _this17 = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
 
-    _this15.state = {
+    _this17.state = {
       isActive: false,
       currentTag: 'None',
       history: []
     };
-    return _this15;
+    return _this17;
   }
 
   _createClass(App, [{
@@ -493,11 +546,11 @@ var App = function (_React$Component11) {
     key: 'toggleState',
     value: function toggleState() {
       var currentState = this.state.isActive;
+      globalIsActive = !currentState;
 
       //currentState ? this.finishActivity() : this.startActivity();
 
       this.finishActivity();
-
       this.setState({
         isActive: !currentState
       });
@@ -505,16 +558,17 @@ var App = function (_React$Component11) {
   }, {
     key: 'render',
     value: function render() {
-      var _this16 = this;
+      var _this18 = this;
 
       return React.createElement(
         'div',
         { className: 'wrapper' },
-        React.createElement(Control, { onTagChange: function onTagChange(v) {
-            return _this16.setTag(v);
+        React.createElement(Control, { currentTag: this.state.currentTag,
+          onTagChange: function onTagChange(v) {
+            return _this18.setTag(v);
           },
           onStartButtonClick: function onStartButtonClick() {
-            return _this16.toggleState();
+            return _this18.toggleState();
           },
           currentState: this.state.isActive }),
         React.createElement(View, { listElems: this.state.history })
@@ -525,9 +579,12 @@ var App = function (_React$Component11) {
   return App;
 }(React.Component);
 
+ReactDOM.render(React.createElement(App, { tagList: tags }), document.getElementById('root'));
+
 var tags = ['JS', 'Drawing', 'English', 'Swedish'];
 
-ReactDOM.render(React.createElement(App, { tagList: tags }), document.getElementById('root'));
+var globalIsActive = false;
+var globalTime = 0;
 
 var global = {
   cellId: 0,
@@ -542,5 +599,25 @@ function formatDate(h, m, s) {
     return h + ':' + m + ':' + s;
   } else {
     return h + ' : ' + m;
+  }
+}
+
+function dateSecConverter(value, separator) {
+  var result = void 0;
+  if (typeof value == 'number') {
+    result = [];
+    result.push(value / 3600 | 0);
+    result.push(value / 60 | 0);
+    result.push(value % 60);
+
+    return result;
+  } else {
+    result = 0;
+
+    result += value[0] * 3600;
+    result += value[1] * 60;
+    result += parseInt(value[2]);
+
+    return result;
   }
 }

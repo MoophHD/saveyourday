@@ -30,7 +30,6 @@ class CurrentWorkTime extends React.Component {
     super(props);
     this.state = {
       workTime: 0,
-      calls: 0
     }
   }
 
@@ -49,8 +48,8 @@ class CurrentWorkTime extends React.Component {
   calculateWorkTime() {
     let result = [];
 
-    let startTimeSecs = this.dateSecConverter(this.props.startTime);    
-    let finishTimeSecs = this.props.finishTime ? this.dateSecConverter(this.props.finishTime) : null;
+    let startTimeSecs = dateSecConverter(this.props.startTime);    
+    let finishTimeSecs = this.props.finishTime ? dateSecConverter(this.props.finishTime) : null;
     let now = new Date();
     let nowSecs = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
 
@@ -60,40 +59,71 @@ class CurrentWorkTime extends React.Component {
       result += 86400; 
     }
 
-    let convResult = this.dateSecConverter(result);
+    let convResult = dateSecConverter(result);
     convResult = formatDate(convResult[0], convResult[1], convResult[2]).split(':').join(' : ');
     
   
     this.setState({workTime: convResult});
   }
 
-    dateSecConverter(value) {
-      let result;
-
-      if(typeof value == 'number') {
-        result = [];
-        console.log(value);
-        result.push(value/3600|0);
-        result.push(value/60|0);
-        result.push(value%60);
-
-        return result;
-      } else {
-        result = 0;
-
-        result += value[0] * 3600;
-        result += value[1] * 60;
-        result += parseInt(value[2]);
-
-        return result;
-
-      }
-    }
-
   render() {
     if (this.props.finishTime) clearInterval(this.timerID);
     return (
       <div>{this.state.workTime}</div>
+    )
+  }
+}
+
+class SubTimeCell extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      break: ''
+    }
+  } 
+
+  componentDidMount() {
+    this.setState({
+      break: this.calculateBreakTime()
+    });
+    
+    this.timerID = setInterval(
+      () => {
+        if (this.state.break != '' && globalIsActive) { clearInterval(this.timerID); return };
+        this.setState({
+          break: this.calculateBreakTime()
+        }) 
+    },
+      1000
+    );
+  }
+    
+  componentWillUnmount() {
+    clearInterval(this.timerID);
+  }
+
+  calculateBreakTime() {
+    if (!this.props.lastFinishActivity) return '';
+
+    let lastActTimeSecs = dateSecConverter(this.props.lastFinishActivity);
+
+    let now = new Date();
+    let nowSecs = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+    let breakTime = dateSecConverter(nowSecs - lastActTimeSecs);
+    breakTime = formatDate(breakTime[0], breakTime[1], breakTime[2]).split(':');
+
+    if (breakTime[0] == '00') breakTime.shift();
+
+    return breakTime.join(' : ');    
+  }
+
+
+  render() {
+    //let breakLabel = this.state.break ? 'Break : ' : '';
+    return (
+      <div className="subCell">
+        <p>{this.state.break}</p>
+      </div>
     )
   }
 }
@@ -111,9 +141,19 @@ class TimeCell extends React.Component {
 
     let formattedStartTime = startTime.slice(0, 2).join(' : ');
     let formattedFinishTime = finishTime ? finishTime.slice(0, 2).join(' : ') : '';
-
     return(
+    <div className="cellWrapper">
+      <SubTimeCell parentCellId={this.props.id} lastFinishActivity={finishTime} />
       <div className="cell" >
+
+        <div className="cellSb">
+          <div>{tag}</div>
+          <CurrentWorkTime 
+            startTime={startTime}
+            finishTime={finishTime}
+          />
+        </div>
+
         <div className="startPart timePt">
           <div>Start</div>
           <div>{formattedStartTime}</div>
@@ -124,14 +164,9 @@ class TimeCell extends React.Component {
             <div>{formattedFinishTime}</div>
           </div> 
 
-        <div className="cellSb">
-          <div>{tag}</div>
-          <CurrentWorkTime 
-            startTime={startTime}
-            finishTime={finishTime}
-          />
-        </div>
+
       </div>
+    </div>  
     )
   }
 }
@@ -152,6 +187,7 @@ class TimeUl extends React.Component {
       let finishPart = len-i == 1 ? blank : initialList[i+1];
       listItems.unshift(<TimeCell
         key={'_timeCellId'+i}
+        id={'id' + i}
         startPart={startPart}
         finishPart={finishPart}
       />)
@@ -177,7 +213,6 @@ class View extends React.Component {
   }
 
   render() {
-
 
   let viewMode = this.state.isLineMode ? <TimeLine /> : <TimeUl list={this.props.listElems} />
 
@@ -259,7 +294,7 @@ class Control extends React.Component {
             {btnStr}
           </button>
         </div>
-        <div className="startTime"><h2>{currentDate}</h2></div>
+        <div className="startTime"><h2>{this.props.currentTag}</h2></div>
       </div>
     )
   }
@@ -319,11 +354,11 @@ class App extends React.Component {
 
   toggleState() {
     let currentState = this.state.isActive;
+    globalIsActive = !currentState;
     
     //currentState ? this.finishActivity() : this.startActivity();
 
     this.finishActivity();
-
     this.setState({
       isActive: !currentState
     })
@@ -332,7 +367,8 @@ class App extends React.Component {
   render() {
     return (
       <div className="wrapper">
-        <Control  onTagChange={(v) => this.setTag(v)} 
+        <Control  currentTag={this.state.currentTag}
+                  onTagChange={(v) => this.setTag(v)} 
                   onStartButtonClick={() => this.toggleState()} 
                   currentState={this.state.isActive}/>
         <View listElems={this.state.history}/>
@@ -341,12 +377,18 @@ class App extends React.Component {
   }
 }
 
-let tags = ['JS', 'Drawing', 'English', 'Swedish'];
+
+
 
 ReactDOM.render(
   <App tagList={tags}/>,
   document.getElementById('root')
 );
+
+let tags = ['JS', 'Drawing', 'English', 'Swedish'];
+
+let globalIsActive = false;
+let globalTime = 0;
 
 let global = {
   cellId: 0,
@@ -361,5 +403,26 @@ function formatDate(h, m, s) {
     return (h + ':' + m + ':' + s)
   } else {
     return (h + ' : ' + m);
+  }
+}
+
+function dateSecConverter(value, separator) {
+  let result;
+  if(typeof value == 'number') {
+    result = [];
+    result.push(value/3600|0);
+    result.push(value/60|0);
+    result.push(value%60);
+
+    return result;
+  } else {
+    result = 0;
+
+    result += value[0] * 3600;
+    result += value[1] * 60;
+    result += parseInt(value[2]);
+
+    return result;
+
   }
 }
