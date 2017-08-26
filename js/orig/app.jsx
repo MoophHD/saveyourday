@@ -58,7 +58,6 @@ class CurrentWorkTime extends React.Component {
     if (this.props.finishTime && this.props.finishTime[0] - this.props.startTime[0] < 0) {
       result += 86400; 
     }
-
     let convResult = dateSecConverter(result);
     convResult = formatDate(convResult[0], convResult[1], convResult[2]).split(':').join(' : ');
     
@@ -230,6 +229,8 @@ class TagForm extends React.Component {
     this.state = {
       value: ''
     }
+
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   handleChange(event) {
@@ -241,10 +242,11 @@ class TagForm extends React.Component {
     this.props.onSubmit(this.state.value);
   }
 
+
   render() {
     return(
-      <form onSubmit={(e) => this.handleSubmit(e)}>
-        <input type="text" value={this.state.value} onBlur={(e) => this.handleSubmit(e)} onChange={(e) => this.handleChange(e)} />
+      <form onSubmit={this.handleSubmit}>
+        <input type="text" value={this.state.value} onChange={(e) => this.handleChange(e)} />
       </form>
     )
   }
@@ -281,7 +283,7 @@ class Control extends React.Component {
     let hr = now.getHours();
     let mn = now.getMinutes();
 
-   
+    console.log('Control_Render :' + this.props.currentTag)
 
     let currentDate = formatDate(hr, mn);
     return(
@@ -294,7 +296,7 @@ class Control extends React.Component {
             {btnStr}
           </button>
         </div>
-        <div className="startTime"><h2>{this.props.currentTag}</h2></div>
+        <div className="tagLabel"><h2>{this.props.currentTag}</h2></div>
       </div>
     )
   }
@@ -309,31 +311,16 @@ class App extends React.Component {
       currentTag: 'None',
       history: []
     }
+    this.toggleState = this.toggleState.bind(this);
   }
 
   setTag(tag) {
+    console.log('1: ' + tag);
     this.setState({
       currentTag: tag
-    })
-  }
+    }, () =>this.toggleState())
 
-  
-  startActivity() {
-    alert('1');
-    let tag = this.state.currentTag;
-    let now = new Date();
-    let history = this.state.history.concat([
-      {
-        [tag] : now.getHours().toString() + ':' + now.getMinutes().toString() + ':' + now.getSeconds().toString()
-      }
-    ]);
-    this.setState(
-      {
-          history: history
-      }
-    ) 
   }
-
 
   finishActivity() {
 
@@ -353,23 +340,34 @@ class App extends React.Component {
   }
 
   toggleState() {
+    console.log('3: ' + this.state.currentTag)
     let currentState = this.state.isActive;
     globalIsActive = !currentState;
     
-    //currentState ? this.finishActivity() : this.startActivity();
-
     this.finishActivity();
     this.setState({
       isActive: !currentState
     })
   }
 
+  componentDidMount() {
+    // let handleEnter = function() {
+    //   this.setTag(this.state.currentTag)
+    // }.bind(this);
+
+    // window.addEventListener("keydown", function(e) {
+    //   if (e.keyCode == 13) handleEnter();
+    // }, false)
+    this.$e.addEventListener("click", function(e) {
+    })
+  }
+
   render() {
     return (
-      <div className="wrapper">
+      <div ref={e => this.$e = e} className="wrapper">
         <Control  currentTag={this.state.currentTag}
                   onTagChange={(v) => this.setTag(v)} 
-                  onStartButtonClick={() => this.toggleState()} 
+                  onStartButtonClick={this.toggleState} 
                   currentState={this.state.isActive}/>
         <View listElems={this.state.history}/>
       </div>
@@ -410,11 +408,11 @@ function dateSecConverter(value, separator) {
   let result;
   if(typeof value == 'number') {
     result = [];
-    result.push(value/3600|0);
-    result.push(value/60|0);
-    result.push(value%60);
+    let hr = value/3600|0;
+    let mn = (value-hr*3600)/60|0;
+    let sc = value%60;
 
-    return result;
+    return result.concat(hr, mn, sc);
   } else {
     result = 0;
 

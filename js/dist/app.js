@@ -117,7 +117,6 @@ var CurrentWorkTime = function (_React$Component4) {
       if (this.props.finishTime && this.props.finishTime[0] - this.props.startTime[0] < 0) {
         result += 86400;
       }
-
       var convResult = dateSecConverter(result);
       convResult = formatDate(convResult[0], convResult[1], convResult[2]).split(':').join(' : ');
 
@@ -367,6 +366,8 @@ var TagForm = function (_React$Component9) {
     _this11.state = {
       value: ''
     };
+
+    _this11.handleSubmit = _this11.handleSubmit.bind(_this11);
     return _this11;
   }
 
@@ -388,12 +389,8 @@ var TagForm = function (_React$Component9) {
 
       return React.createElement(
         'form',
-        { onSubmit: function onSubmit(e) {
-            return _this12.handleSubmit(e);
-          } },
-        React.createElement('input', { type: 'text', value: this.state.value, onBlur: function onBlur(e) {
-            return _this12.handleSubmit(e);
-          }, onChange: function onChange(e) {
+        { onSubmit: this.handleSubmit },
+        React.createElement('input', { type: 'text', value: this.state.value, onChange: function onChange(e) {
             return _this12.handleChange(e);
           } })
       );
@@ -463,6 +460,8 @@ var Control = function (_React$Component11) {
       var hr = now.getHours();
       var mn = now.getMinutes();
 
+      console.log('Control_Render :' + this.props.currentTag);
+
       var currentDate = formatDate(hr, mn);
       return React.createElement(
         'div',
@@ -482,7 +481,7 @@ var Control = function (_React$Component11) {
         ),
         React.createElement(
           'div',
-          { className: 'startTime' },
+          { className: 'tagLabel' },
           React.createElement(
             'h2',
             null,
@@ -509,25 +508,20 @@ var App = function (_React$Component12) {
       currentTag: 'None',
       history: []
     };
+    _this17.toggleState = _this17.toggleState.bind(_this17);
     return _this17;
   }
 
   _createClass(App, [{
     key: 'setTag',
     value: function setTag(tag) {
+      var _this18 = this;
+
+      console.log('1: ' + tag);
       this.setState({
         currentTag: tag
-      });
-    }
-  }, {
-    key: 'startActivity',
-    value: function startActivity() {
-      alert('1');
-      var tag = this.state.currentTag;
-      var now = new Date();
-      var history = this.state.history.concat([_defineProperty({}, tag, now.getHours().toString() + ':' + now.getMinutes().toString() + ':' + now.getSeconds().toString())]);
-      this.setState({
-        history: history
+      }, function () {
+        return _this18.toggleState();
       });
     }
   }, {
@@ -545,10 +539,9 @@ var App = function (_React$Component12) {
   }, {
     key: 'toggleState',
     value: function toggleState() {
+      console.log('3: ' + this.state.currentTag);
       var currentState = this.state.isActive;
       globalIsActive = !currentState;
-
-      //currentState ? this.finishActivity() : this.startActivity();
 
       this.finishActivity();
       this.setState({
@@ -556,20 +549,32 @@ var App = function (_React$Component12) {
       });
     }
   }, {
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      // let handleEnter = function() {
+      //   this.setTag(this.state.currentTag)
+      // }.bind(this);
+
+      // window.addEventListener("keydown", function(e) {
+      //   if (e.keyCode == 13) handleEnter();
+      // }, false)
+      this.$e.addEventListener("click", function (e) {});
+    }
+  }, {
     key: 'render',
     value: function render() {
-      var _this18 = this;
+      var _this19 = this;
 
       return React.createElement(
         'div',
-        { className: 'wrapper' },
+        { ref: function ref(e) {
+            return _this19.$e = e;
+          }, className: 'wrapper' },
         React.createElement(Control, { currentTag: this.state.currentTag,
           onTagChange: function onTagChange(v) {
-            return _this18.setTag(v);
+            return _this19.setTag(v);
           },
-          onStartButtonClick: function onStartButtonClick() {
-            return _this18.toggleState();
-          },
+          onStartButtonClick: this.toggleState,
           currentState: this.state.isActive }),
         React.createElement(View, { listElems: this.state.history })
       );
@@ -606,11 +611,11 @@ function dateSecConverter(value, separator) {
   var result = void 0;
   if (typeof value == 'number') {
     result = [];
-    result.push(value / 3600 | 0);
-    result.push(value / 60 | 0);
-    result.push(value % 60);
+    var hr = value / 3600 | 0;
+    var mn = (value - hr * 3600) / 60 | 0;
+    var sc = value % 60;
 
-    return result;
+    return result.concat(hr, mn, sc);
   } else {
     result = 0;
 

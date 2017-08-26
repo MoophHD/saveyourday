@@ -67,12 +67,12 @@ body {
   background-color: #3fafa1;
 }
 
-.startTime {
+.tagLabel {
   text-align: center;
   padding: 15px 0;
 }
 
-.startTime h2 {
+.tagLabel h2 {
   display: inline-block;
   margin: 0;
   padding: 0;
@@ -110,6 +110,10 @@ body {
   display: inline-block;
   font-size: 2em;
   padding: 20px 0;
+}
+
+.cellSb div:first-child {
+  text-transform: uppercase;
 }
 
 .subCell {
