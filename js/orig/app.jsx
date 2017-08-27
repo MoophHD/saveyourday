@@ -88,7 +88,7 @@ class SubTimeCell extends React.Component {
     
     this.timerID = setInterval(
       () => {
-        if (this.state.break != '' && globalIsActive) { clearInterval(this.timerID); return };
+        if (this.state.break != '' && global.isActive) {clearInterval(this.timerID); return };
         this.setState({
           break: this.calculateBreakTime()
         }) 
@@ -109,7 +109,7 @@ class SubTimeCell extends React.Component {
     let now = new Date();
     let nowSecs = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
     let breakTime = dateSecConverter(nowSecs - lastActTimeSecs);
-    breakTime = formatDate(breakTime[0], breakTime[1], breakTime[2]).split(':');
+    breakTime = formatDate(breakTime).split(':');
 
     if (breakTime[0] == '00') breakTime.shift();
 
@@ -231,6 +231,25 @@ class TagForm extends React.Component {
     }
 
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleBlur = this.handleBlur.bind(this);
+    this.handleFocus = this.handleFocus.bind(this);
+  }
+
+  componentDidMount() {
+    let btnListener = function() {
+      this.handleSubmit();
+    }.bind(this);
+
+    document.querySelector('.controlStartBtn').addEventListener("click", btnListener);
+
+    this.windowListener = function(e) {
+      if (e.keyCode == 13) this.handleSubmit();
+    }.bind(this);
+
+    if (!this.props.autoFocus) {
+      window.addEventListener("keydown", this.windowListener)
+    }
+
   }
 
   handleChange(event) {
@@ -238,15 +257,29 @@ class TagForm extends React.Component {
   }
 
   handleSubmit(event) {
-    event.preventDefault();
-    this.props.onSubmit(this.state.value);
+    if (event) event.preventDefault();
+    let tagName = this.state.value != '' ? this.state.value : 'None';
+
+    this.props.onSubmit(tagName);
   }
 
+  handleBlur() {
+      window.addEventListener("keydown", this.windowListener);
+  }    
+
+  handleFocus() {
+    window.removeEventListener("keydown", this.windowListener);
+  }
 
   render() {
     return(
       <form onSubmit={this.handleSubmit}>
-        <input type="text" value={this.state.value} onChange={(e) => this.handleChange(e)} />
+        <input autoFocus={this.props.autoFocus}
+               onFocus={this.handleFocus}
+               onBlur={this.handleBlur}
+               onChange={(e) => this.handleChange(e)} 
+               type="text" 
+               value={this.state.value} />
       </form>
     )
   }
@@ -262,7 +295,8 @@ class Tags extends React.Component {
     return(
       <div className="tagPanel">
         <h2>Add tag</h2>
-        <TagForm onSubmit={(v) => this.props.onTagSubmit(v)}/>
+        <TagForm onSubmit={(v) => this.props.onTagSubmit(v)}
+                 autoFocus={true}/>
       </div>
     )
   }
@@ -283,15 +317,13 @@ class Control extends React.Component {
     let hr = now.getHours();
     let mn = now.getMinutes();
 
-    console.log('Control_Render :' + this.props.currentTag)
-
     let currentDate = formatDate(hr, mn);
     return(
 
       <div className="controlPanel">
         <Tags onTagSubmit={(v) => this.props.onTagChange(v)}/>
         <div className="controlStart">
-          <button onClick={this.props.onStartButtonClick}className="controlStartBtn">
+          <button className="controlStartBtn">
             <i className={"fa " + icon} aria-hidden="true"></i>
             {btnStr}
           </button>
@@ -306,58 +338,49 @@ class Control extends React.Component {
 class App extends React.Component {
   constructor(props) {
     super(props);
+    this.id = 0;
     this.state = {
       isActive: false,
       currentTag: 'None',
       history: []
     }
-    this.toggleState = this.toggleState.bind(this);
+    this.setTag = this.setTag.bind(this);
   }
 
   setTag(tag) {
-    console.log('1: ' + tag);
-    this.setState({
-      currentTag: tag
-    }, () =>this.toggleState())
-
-  }
-
-  finishActivity() {
-
-    let tag = this.state.currentTag;
+    let currentState = this.state.isActive;
     let now = new Date();
     let history = this.state.history.concat([
       {
-        [tag] : formatDate(now.getHours(), now.getMinutes(), now.getSeconds())
+        [tag] : formatDate(now.getHours(), now.getMinutes(), now.getSeconds()),
+        id: this.id++
       }
     ]);
 
     this.setState(
       {
-          history: history
+          history: history,
+          isActive: !currentState,
+          currentTag: tag
       }
     )
+    global.isActive = !currentState;
   }
 
-  toggleState() {
-    console.log('3: ' + this.state.currentTag)
-    let currentState = this.state.isActive;
-    globalIsActive = !currentState;
-    
-    this.finishActivity();
-    this.setState({
-      isActive: !currentState
-    })
+  componentDidUpdate() {
+    let lastHistoryPart = this.state.history[this.state.history.length - 1];
+
+    let tag = Object.keys(lastHistoryPart)[0];
+    let time = lastHistoryPart[tag];
+    setCookie(tag, time, {expires: 86400});
   }
 
   componentDidMount() {
-    // let handleEnter = function() {
-    //   this.setTag(this.state.currentTag)
-    // }.bind(this);
-
-    // window.addEventListener("keydown", function(e) {
-    //   if (e.keyCode == 13) handleEnter();
-    // }, false)
+    if (document.cookie) {
+      let cookie = document.cookie;
+      let lastCookie = cookie.split(': ')[cookie.split(': ').length - 1];
+      console.log(getCookie('None'));
+    }
     this.$e.addEventListener("click", function(e) {
     })
   }
@@ -367,16 +390,12 @@ class App extends React.Component {
       <div ref={e => this.$e = e} className="wrapper">
         <Control  currentTag={this.state.currentTag}
                   onTagChange={(v) => this.setTag(v)} 
-                  onStartButtonClick={this.toggleState} 
                   currentState={this.state.isActive}/>
         <View listElems={this.state.history}/>
       </div>
     )
   }
 }
-
-
-
 
 ReactDOM.render(
   <App tagList={tags}/>,
@@ -385,15 +404,22 @@ ReactDOM.render(
 
 let tags = ['JS', 'Drawing', 'English', 'Swedish'];
 
-let globalIsActive = false;
-let globalTime = 0;
-
 let global = {
-  cellId: 0,
-  sliceId: 0
+  isActive: false
 }
 
-function formatDate(h, m, s) {
+function formatDate(...args) {
+  let h = 0, m = 0, s = 0;
+  
+  if (args.length > 1) {
+    h = args[0];
+    m = args[1];
+    s = args[2];
+  } else if (args.length == 1){
+    [h, m, s] = args[0];
+  }
+  
+  
   h = h > 9 ? h.toString() : '0' + h.toString();
   m = m > 9 ? m.toString() : '0' + m.toString();
   if (s != undefined) {
@@ -423,4 +449,40 @@ function dateSecConverter(value, separator) {
     return result;
 
   }
+}
+
+function getCookie(name) {
+  var matches = document.cookie.match(new RegExp(
+    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+  ));
+  return matches ? decodeURIComponent(matches[1]) : undefined;
+}
+
+function setCookie(name, value, options) {
+  options = options || {};
+
+  var expires = options.expires;
+
+  if (typeof expires == "number" && expires) {
+    var d = new Date();
+    d.setTime(d.getTime() + expires * 1000);
+    expires = options.expires = d;
+  }
+  if (expires && expires.toUTCString) {
+    options.expires = expires.toUTCString();
+  }
+
+  value = encodeURIComponent(value);
+
+  var updatedCookie = name + "=" + value;
+
+  for (var propName in options) {
+    updatedCookie += "; " + propName;
+    var propValue = options[propName];
+    if (propValue !== true) {
+      updatedCookie += "=" + propValue;
+    }
+  }
+
+  document.cookie = updatedCookie;
 }

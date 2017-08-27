@@ -1,5 +1,7 @@
 'use strict';
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -161,7 +163,7 @@ var SubTimeCell = function (_React$Component5) {
       });
 
       this.timerID = setInterval(function () {
-        if (_this7.state.break != '' && globalIsActive) {
+        if (_this7.state.break != '' && global.isActive) {
           clearInterval(_this7.timerID);return;
         };
         _this7.setState({
@@ -184,7 +186,7 @@ var SubTimeCell = function (_React$Component5) {
       var now = new Date();
       var nowSecs = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
       var breakTime = dateSecConverter(nowSecs - lastActTimeSecs);
-      breakTime = formatDate(breakTime[0], breakTime[1], breakTime[2]).split(':');
+      breakTime = formatDate(breakTime).split(':');
 
       if (breakTime[0] == '00') breakTime.shift();
 
@@ -368,10 +370,29 @@ var TagForm = function (_React$Component9) {
     };
 
     _this11.handleSubmit = _this11.handleSubmit.bind(_this11);
+    _this11.handleBlur = _this11.handleBlur.bind(_this11);
+    _this11.handleFocus = _this11.handleFocus.bind(_this11);
     return _this11;
   }
 
   _createClass(TagForm, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var btnListener = function () {
+        this.handleSubmit();
+      }.bind(this);
+
+      document.querySelector('.controlStartBtn').addEventListener("click", btnListener);
+
+      this.windowListener = function (e) {
+        if (e.keyCode == 13) this.handleSubmit();
+      }.bind(this);
+
+      if (!this.props.autoFocus) {
+        window.addEventListener("keydown", this.windowListener);
+      }
+    }
+  }, {
     key: 'handleChange',
     value: function handleChange(event) {
       this.setState({ value: event.target.value });
@@ -379,8 +400,20 @@ var TagForm = function (_React$Component9) {
   }, {
     key: 'handleSubmit',
     value: function handleSubmit(event) {
-      event.preventDefault();
-      this.props.onSubmit(this.state.value);
+      if (event) event.preventDefault();
+      var tagName = this.state.value != '' ? this.state.value : 'None';
+
+      this.props.onSubmit(tagName);
+    }
+  }, {
+    key: 'handleBlur',
+    value: function handleBlur() {
+      window.addEventListener("keydown", this.windowListener);
+    }
+  }, {
+    key: 'handleFocus',
+    value: function handleFocus() {
+      window.removeEventListener("keydown", this.windowListener);
     }
   }, {
     key: 'render',
@@ -390,9 +423,14 @@ var TagForm = function (_React$Component9) {
       return React.createElement(
         'form',
         { onSubmit: this.handleSubmit },
-        React.createElement('input', { type: 'text', value: this.state.value, onChange: function onChange(e) {
+        React.createElement('input', { autoFocus: this.props.autoFocus,
+          onFocus: this.handleFocus,
+          onBlur: this.handleBlur,
+          onChange: function onChange(e) {
             return _this12.handleChange(e);
-          } })
+          },
+          type: 'text',
+          value: this.state.value })
       );
     }
   }]);
@@ -424,7 +462,8 @@ var Tags = function (_React$Component10) {
         ),
         React.createElement(TagForm, { onSubmit: function onSubmit(v) {
             return _this14.props.onTagSubmit(v);
-          } })
+          },
+          autoFocus: true })
       );
     }
   }]);
@@ -460,8 +499,6 @@ var Control = function (_React$Component11) {
       var hr = now.getHours();
       var mn = now.getMinutes();
 
-      console.log('Control_Render :' + this.props.currentTag);
-
       var currentDate = formatDate(hr, mn);
       return React.createElement(
         'div',
@@ -474,7 +511,7 @@ var Control = function (_React$Component11) {
           { className: 'controlStart' },
           React.createElement(
             'button',
-            { onClick: this.props.onStartButtonClick, className: 'controlStartBtn' },
+            { className: 'controlStartBtn' },
             React.createElement('i', { className: "fa " + icon, 'aria-hidden': 'true' }),
             btnStr
           )
@@ -503,78 +540,65 @@ var App = function (_React$Component12) {
 
     var _this17 = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
 
+    _this17.id = 0;
     _this17.state = {
       isActive: false,
       currentTag: 'None',
       history: []
     };
-    _this17.toggleState = _this17.toggleState.bind(_this17);
+    _this17.setTag = _this17.setTag.bind(_this17);
     return _this17;
   }
 
   _createClass(App, [{
     key: 'setTag',
     value: function setTag(tag) {
-      var _this18 = this;
+      var _ref;
 
-      console.log('1: ' + tag);
-      this.setState({
-        currentTag: tag
-      }, function () {
-        return _this18.toggleState();
-      });
-    }
-  }, {
-    key: 'finishActivity',
-    value: function finishActivity() {
-
-      var tag = this.state.currentTag;
-      var now = new Date();
-      var history = this.state.history.concat([_defineProperty({}, tag, formatDate(now.getHours(), now.getMinutes(), now.getSeconds()))]);
-
-      this.setState({
-        history: history
-      });
-    }
-  }, {
-    key: 'toggleState',
-    value: function toggleState() {
-      console.log('3: ' + this.state.currentTag);
       var currentState = this.state.isActive;
-      globalIsActive = !currentState;
+      var now = new Date();
+      var history = this.state.history.concat([(_ref = {}, _defineProperty(_ref, tag, formatDate(now.getHours(), now.getMinutes(), now.getSeconds())), _defineProperty(_ref, 'id', this.id++), _ref)]);
 
-      this.finishActivity();
       this.setState({
-        isActive: !currentState
+        history: history,
+        isActive: !currentState,
+        currentTag: tag
       });
+      global.isActive = !currentState;
+    }
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate() {
+      var lastHistoryPart = this.state.history[this.state.history.length - 1];
+
+      var tag = Object.keys(lastHistoryPart)[0];
+      var time = lastHistoryPart[tag];
+      setCookie(tag, time, { expires: 86400 });
     }
   }, {
     key: 'componentDidMount',
     value: function componentDidMount() {
-      // let handleEnter = function() {
-      //   this.setTag(this.state.currentTag)
-      // }.bind(this);
-
-      // window.addEventListener("keydown", function(e) {
-      //   if (e.keyCode == 13) handleEnter();
-      // }, false)
+      if (document.cookie) {
+        var cookie = document.cookie;
+        var lastCookie = cookie.split(': ')[cookie.split(': ').length - 1];
+        console.log(getCookie('None'));
+      }
       this.$e.addEventListener("click", function (e) {});
     }
   }, {
     key: 'render',
     value: function render() {
-      var _this19 = this;
+      var _this18 = this;
 
       return React.createElement(
         'div',
         { ref: function ref(e) {
-            return _this19.$e = e;
+            return _this18.$e = e;
           }, className: 'wrapper' },
         React.createElement(Control, { currentTag: this.state.currentTag,
           onTagChange: function onTagChange(v) {
-            return _this19.setTag(v);
+            return _this18.setTag(v);
           },
-          onStartButtonClick: this.toggleState,
           currentState: this.state.isActive }),
         React.createElement(View, { listElems: this.state.history })
       );
@@ -588,15 +612,29 @@ ReactDOM.render(React.createElement(App, { tagList: tags }), document.getElement
 
 var tags = ['JS', 'Drawing', 'English', 'Swedish'];
 
-var globalIsActive = false;
-var globalTime = 0;
-
 var global = {
-  cellId: 0,
-  sliceId: 0
+  isActive: false
 };
 
-function formatDate(h, m, s) {
+function formatDate() {
+  var h = 0,
+      m = 0,
+      s = 0;
+
+  if (arguments.length > 1) {
+    h = arguments.length <= 0 ? undefined : arguments[0];
+    m = arguments.length <= 1 ? undefined : arguments[1];
+    s = arguments.length <= 2 ? undefined : arguments[2];
+  } else if (arguments.length == 1) {
+    var _ref2 = arguments.length <= 0 ? undefined : arguments[0];
+
+    var _ref3 = _slicedToArray(_ref2, 3);
+
+    h = _ref3[0];
+    m = _ref3[1];
+    s = _ref3[2];
+  }
+
   h = h > 9 ? h.toString() : '0' + h.toString();
   m = m > 9 ? m.toString() : '0' + m.toString();
   if (s != undefined) {
@@ -625,4 +663,38 @@ function dateSecConverter(value, separator) {
 
     return result;
   }
+}
+
+function getCookie(name) {
+  var matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
+  return matches ? decodeURIComponent(matches[1]) : undefined;
+}
+
+function setCookie(name, value, options) {
+  options = options || {};
+
+  var expires = options.expires;
+
+  if (typeof expires == "number" && expires) {
+    var d = new Date();
+    d.setTime(d.getTime() + expires * 1000);
+    expires = options.expires = d;
+  }
+  if (expires && expires.toUTCString) {
+    options.expires = expires.toUTCString();
+  }
+
+  value = encodeURIComponent(value);
+
+  var updatedCookie = name + "=" + value;
+
+  for (var propName in options) {
+    updatedCookie += "; " + propName;
+    var propValue = options[propName];
+    if (propValue !== true) {
+      updatedCookie += "=" + propValue;
+    }
+  }
+
+  document.cookie = updatedCookie;
 }
