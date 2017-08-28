@@ -1,3 +1,7 @@
+let global = {
+  startTime: new Date()
+}
+
 class LocalTimeLine extends React.Component {
   render() {
     return(
@@ -81,6 +85,12 @@ class SubTimeCell extends React.Component {
     }
   } 
 
+  componentWillUpdate() {
+    if (this.props.currentState && this.state.break != '') {
+      clearInterval(this.timerID);
+    }
+  }
+
   componentDidMount() {
     this.setState({
       break: this.calculateBreakTime()
@@ -88,7 +98,6 @@ class SubTimeCell extends React.Component {
     
     this.timerID = setInterval(
       () => {
-        if (this.state.break != '' && global.isActive) {clearInterval(this.timerID); return };
         this.setState({
           break: this.calculateBreakTime()
         }) 
@@ -142,7 +151,9 @@ class TimeCell extends React.Component {
     let formattedFinishTime = finishTime ? finishTime.slice(0, 2).join(' : ') : '';
     return(
     <div className="cellWrapper">
-      <SubTimeCell parentCellId={this.props.id} lastFinishActivity={finishTime} />
+      <SubTimeCell  currentState={this.props.currentState}
+                    parentCellId={this.props.id} 
+                    lastFinishActivity={finishTime} />
       <div className="cell" >
 
         <div className="cellSb">
@@ -189,6 +200,7 @@ class TimeUl extends React.Component {
         id={'id' + i}
         startPart={startPart}
         finishPart={finishPart}
+        currentState={this.props.currentState}
       />)
     }
 
@@ -213,7 +225,7 @@ class View extends React.Component {
 
   render() {
 
-  let viewMode = this.state.isLineMode ? <TimeLine /> : <TimeUl list={this.props.listElems} />
+  let viewMode = this.state.isLineMode ? <TimeLine /> : <TimeUl currentState={this.props.currentState} list={this.props.listElems} />
 
     return(
       <div className="view">
@@ -227,7 +239,8 @@ class TagForm extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: ''
+      value: '',
+      isHandlerAttached: this.props.autoFocus,
     }
 
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -264,11 +277,13 @@ class TagForm extends React.Component {
   }
 
   handleBlur() {
-      window.addEventListener("keydown", this.windowListener);
+    let flag = this.state.isHandlerAttached;
+    if (!flag) {window.addEventListener("keydown", this.windowListener); this.setState({isHandlerAttached: !flag});} 
   }    
 
   handleFocus() {
-    window.removeEventListener("keydown", this.windowListener);
+    let flag = this.state.isHandlerAttached;
+    if (flag) {window.removeEventListener("keydown", this.windowListener); this.setState({isHandlerAttached: !flag})} 
   }
 
   render() {
@@ -287,11 +302,9 @@ class TagForm extends React.Component {
 
 
 class Tags extends React.Component {
-  constructor(props) {
-    super(props);
-  }
 
   render() {
+    
     return(
       <div className="tagPanel">
         <h2>Add tag</h2>
@@ -302,7 +315,99 @@ class Tags extends React.Component {
   }
 }
 
+class EfficiencyLabel extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.workTime = 0;
+    this.restTime = 0;
+
+    this.lastState = this.props.state;
+
+    this.lastAnchor;
+    this.state = {
+      effMode: false,
+      effPerc: '0%',
+      eff: '0h0m/0h0m'
+    }
+    this.calculateEfficiency = this.calculateEfficiency.bind(this);
+  }
+
+  componentDidMount() {
+    this.startTime = formatDate(global.startTime.getHours(), global.startTime.getMinutes(), global.startTime.getSeconds());
+    this.timerID = setInterval(
+      () => this.calculateEfficiency(),
+      1000
+    )
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timerID);
+  }
+
+  componentWillReceiveProps(nextProps) {
+  }
+
+  calculateEfficiency() {
+    let target, value;
+    let now = new Date();
+    let nowSecs = dateSecConverter([now.getHours(), now.getMinutes(), now.getSeconds()]);
+    let anchor = this.props.anchor ? this.props.anchor[Object.keys(this.props.anchor)[0]] : null;
+
+
+    if (!anchor) { // no activity yet
+
+      value = nowSecs - dateSecConverter(this.startTime.split(':'));
+      this.restTime = value;
+    } else {
+        value = nowSecs - this.lastCall;
+
+        if ( this.lastState == this.props.state) { // while keeping working or resting
+          if (this.props.state) {
+            this.workTime += value;
+          } else {
+            this.restTime += value;
+          }
+        } else {
+          this.lastState = this.props.state;
+        }
+    }
+
+    this.lastCall = nowSecs;
+
+    console.log('workT : '+ this.workTime +';'+'restT : ' + this.restTime )
+
+    let wrkTimeArray = dateSecConverter(this.workTime);
+    let wholeTimeArray = dateSecConverter(this.workTime + this.restTime);
+    let effDate = wrkTimeArray[0] + 'h' + wrkTimeArray[1] + 'm/' + wholeTimeArray[0] + 'h' + wholeTimeArray[1] + 'm';
+
+
+    let perc = Math.round((this.workTime / (this.workTime + this.restTime))*10000)/100 + '%';
+    this.setState( {
+      effPerc: perc,
+      eff: effDate
+    })
+  }
+
+  handleSelect(e) {
+    e.preventDefault();
+  }
+
+  render() {
+    let displayEff = this.state.effMode ? this.state.eff : this.state.effPerc;
+    return(
+      <div onMouseDown={(e) => this.handleSelect(e)}
+           onClick={() => this.setState({effMode : !this.state.effMode})} className="workBreakLabel">
+        <h2 >{displayEff}</h2>
+        <p>Goal:75%</p>
+      </div>
+    )
+
+  }
+}
+
 class Control extends React.Component {
+
   componentDidMount() {
     let now = new Date();
     this.openingTime = now.getHours().toString() + ' : ' + now.getMinutes().toString();
@@ -321,14 +426,14 @@ class Control extends React.Component {
     return(
 
       <div className="controlPanel">
-        <Tags onTagSubmit={(v) => this.props.onTagChange(v)}/>
+        <Tags currentState={this.props.currentState} onTagSubmit={(v) => this.props.onTagChange(v)}/>
         <div className="controlStart">
           <button className="controlStartBtn">
             <i className={"fa " + icon} aria-hidden="true"></i>
             {btnStr}
           </button>
         </div>
-        <div className="tagLabel"><h2>{this.props.currentTag}</h2></div>
+        <EfficiencyLabel state={this.props.currentState} anchor={this.props.lastElem}/>
       </div>
     )
   }
@@ -364,7 +469,6 @@ class App extends React.Component {
           currentTag: tag
       }
     )
-    global.isActive = !currentState;
   }
 
   componentDidUpdate() {
@@ -379,19 +483,23 @@ class App extends React.Component {
     if (document.cookie) {
       let cookie = document.cookie;
       let lastCookie = cookie.split(': ')[cookie.split(': ').length - 1];
-      console.log(getCookie('None'));
     }
     this.$e.addEventListener("click", function(e) {
     })
   }
 
   render() {
+    let currentHistory = this.state.history;
+    let lastHistoryElem = currentHistory[currentHistory.length - 1];
+
     return (
       <div ref={e => this.$e = e} className="wrapper">
-        <Control  currentTag={this.state.currentTag}
-                  onTagChange={(v) => this.setTag(v)} 
-                  currentState={this.state.isActive}/>
-        <View listElems={this.state.history}/>
+        <Control  currentState={this.state.isActive}
+                  currentTag={this.state.currentTag}
+                  onTagChange={(v) => this.setTag(v)}
+                  lastElem={lastHistoryElem}/>
+        <View   currentState={this.state.isActive}
+                listElems={this.state.history}/>
       </div>
     )
   }
@@ -404,9 +512,7 @@ ReactDOM.render(
 
 let tags = ['JS', 'Drawing', 'English', 'Swedish'];
 
-let global = {
-  isActive: false
-}
+
 
 function formatDate(...args) {
   let h = 0, m = 0, s = 0;

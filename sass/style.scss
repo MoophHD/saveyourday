@@ -23,7 +23,7 @@ body {
     padding: 0 100px;
     padding-top: 35px;
     padding-bottom: 35px;
-    grid-template-columns: 40% 40% 20%;
+    grid-template-columns: 30% 40% 30%;
     grid-template-rows: repeat(185px);
 }
 
@@ -73,25 +73,9 @@ body {
     background-color: lighten($main-green, 5%);
 }
 
-.tagLabel  {
-    text-align: center;
-    padding: 15px 0;
-}
-    
-
-.tagLabel h2 {
-    display: inline-block;
-    margin: 0;
-    padding: 0;
-    font-weight: 600;
-    font-size: 3em;
-}
-
 .fa {
     margin-right: 10px;
 }
-
-
 
 .cell {
     display: grid;
@@ -136,4 +120,15 @@ body {
     position: relative;
     top: 50%;
     transform: translateY(-50%); 
+}
+
+.workBreakLabel {
+    text-align: center;
+    padding: 15px 0;
+}
+
+.workBreakLabel h2,
+.workBreakLabel p{
+    margin: 0;
+    padding: 0;
 }

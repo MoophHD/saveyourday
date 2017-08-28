@@ -12,6 +12,10 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+var global = {
+  startTime: new Date()
+};
+
 var LocalTimeLine = function (_React$Component) {
   _inherits(LocalTimeLine, _React$Component);
 
@@ -154,6 +158,13 @@ var SubTimeCell = function (_React$Component5) {
   }
 
   _createClass(SubTimeCell, [{
+    key: 'componentWillUpdate',
+    value: function componentWillUpdate() {
+      if (this.props.currentState && this.state.break != '') {
+        clearInterval(this.timerID);
+      }
+    }
+  }, {
     key: 'componentDidMount',
     value: function componentDidMount() {
       var _this7 = this;
@@ -163,9 +174,6 @@ var SubTimeCell = function (_React$Component5) {
       });
 
       this.timerID = setInterval(function () {
-        if (_this7.state.break != '' && global.isActive) {
-          clearInterval(_this7.timerID);return;
-        };
         _this7.setState({
           break: _this7.calculateBreakTime()
         });
@@ -233,7 +241,9 @@ var TimeCell = function (_React$Component6) {
       return React.createElement(
         'div',
         { className: 'cellWrapper' },
-        React.createElement(SubTimeCell, { parentCellId: this.props.id, lastFinishActivity: finishTime }),
+        React.createElement(SubTimeCell, { currentState: this.props.currentState,
+          parentCellId: this.props.id,
+          lastFinishActivity: finishTime }),
         React.createElement(
           'div',
           { className: 'cell' },
@@ -310,7 +320,8 @@ var TimeUl = function (_React$Component7) {
           key: '_timeCellId' + i,
           id: 'id' + i,
           startPart: startPart,
-          finishPart: finishPart
+          finishPart: finishPart,
+          currentState: this.props.currentState
         }));
       }
 
@@ -344,7 +355,7 @@ var View = function (_React$Component8) {
     key: 'render',
     value: function render() {
 
-      var viewMode = this.state.isLineMode ? React.createElement(TimeLine, null) : React.createElement(TimeUl, { list: this.props.listElems });
+      var viewMode = this.state.isLineMode ? React.createElement(TimeLine, null) : React.createElement(TimeUl, { currentState: this.props.currentState, list: this.props.listElems });
 
       return React.createElement(
         'div',
@@ -366,7 +377,8 @@ var TagForm = function (_React$Component9) {
     var _this11 = _possibleConstructorReturn(this, (TagForm.__proto__ || Object.getPrototypeOf(TagForm)).call(this, props));
 
     _this11.state = {
-      value: ''
+      value: '',
+      isHandlerAttached: _this11.props.autoFocus
     };
 
     _this11.handleSubmit = _this11.handleSubmit.bind(_this11);
@@ -408,12 +420,18 @@ var TagForm = function (_React$Component9) {
   }, {
     key: 'handleBlur',
     value: function handleBlur() {
-      window.addEventListener("keydown", this.windowListener);
+      var flag = this.state.isHandlerAttached;
+      if (!flag) {
+        window.addEventListener("keydown", this.windowListener);this.setState({ isHandlerAttached: !flag });
+      }
     }
   }, {
     key: 'handleFocus',
     value: function handleFocus() {
-      window.removeEventListener("keydown", this.windowListener);
+      var flag = this.state.isHandlerAttached;
+      if (flag) {
+        window.removeEventListener("keydown", this.windowListener);this.setState({ isHandlerAttached: !flag });
+      }
     }
   }, {
     key: 'render',
@@ -441,10 +459,10 @@ var TagForm = function (_React$Component9) {
 var Tags = function (_React$Component10) {
   _inherits(Tags, _React$Component10);
 
-  function Tags(props) {
+  function Tags() {
     _classCallCheck(this, Tags);
 
-    return _possibleConstructorReturn(this, (Tags.__proto__ || Object.getPrototypeOf(Tags)).call(this, props));
+    return _possibleConstructorReturn(this, (Tags.__proto__ || Object.getPrototypeOf(Tags)).apply(this, arguments));
   }
 
   _createClass(Tags, [{
@@ -471,8 +489,128 @@ var Tags = function (_React$Component10) {
   return Tags;
 }(React.Component);
 
-var Control = function (_React$Component11) {
-  _inherits(Control, _React$Component11);
+var EfficiencyLabel = function (_React$Component11) {
+  _inherits(EfficiencyLabel, _React$Component11);
+
+  function EfficiencyLabel(props) {
+    _classCallCheck(this, EfficiencyLabel);
+
+    var _this15 = _possibleConstructorReturn(this, (EfficiencyLabel.__proto__ || Object.getPrototypeOf(EfficiencyLabel)).call(this, props));
+
+    _this15.workTime = 0;
+    _this15.restTime = 0;
+
+    _this15.lastState = _this15.props.state;
+
+    _this15.lastAnchor;
+    _this15.state = {
+      effMode: false,
+      effPerc: '0%',
+      eff: '0h0m/0h0m'
+    };
+    _this15.calculateEfficiency = _this15.calculateEfficiency.bind(_this15);
+    return _this15;
+  }
+
+  _createClass(EfficiencyLabel, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this16 = this;
+
+      this.startTime = formatDate(global.startTime.getHours(), global.startTime.getMinutes(), global.startTime.getSeconds());
+      this.timerID = setInterval(function () {
+        return _this16.calculateEfficiency();
+      }, 1000);
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      clearInterval(this.timerID);
+    }
+  }, {
+    key: 'componentWillReceiveProps',
+    value: function componentWillReceiveProps(nextProps) {}
+  }, {
+    key: 'calculateEfficiency',
+    value: function calculateEfficiency() {
+      var target = void 0,
+          value = void 0;
+      var now = new Date();
+      var nowSecs = dateSecConverter([now.getHours(), now.getMinutes(), now.getSeconds()]);
+      var anchor = this.props.anchor ? this.props.anchor[Object.keys(this.props.anchor)[0]] : null;
+
+      if (!anchor) {
+        // no activity yet
+
+        value = nowSecs - dateSecConverter(this.startTime.split(':'));
+        this.restTime = value;
+      } else {
+        value = nowSecs - this.lastCall;
+
+        if (this.lastState == this.props.state) {
+          // while keeping working or resting
+          if (this.props.state) {
+            this.workTime += value;
+          } else {
+            this.restTime += value;
+          }
+        } else {
+          this.lastState = this.props.state;
+        }
+      }
+
+      this.lastCall = nowSecs;
+
+      console.log('workT : ' + this.workTime + ';' + 'restT : ' + this.restTime);
+
+      var wrkTimeArray = dateSecConverter(this.workTime);
+      var wholeTimeArray = dateSecConverter(this.workTime + this.restTime);
+      var effDate = wrkTimeArray[0] + 'h' + wrkTimeArray[1] + 'm/' + wholeTimeArray[0] + 'h' + wholeTimeArray[1] + 'm';
+
+      var perc = Math.round(this.workTime / (this.workTime + this.restTime) * 10000) / 100 + '%';
+      this.setState({
+        effPerc: perc,
+        eff: effDate
+      });
+    }
+  }, {
+    key: 'handleSelect',
+    value: function handleSelect(e) {
+      e.preventDefault();
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this17 = this;
+
+      var displayEff = this.state.effMode ? this.state.eff : this.state.effPerc;
+      return React.createElement(
+        'div',
+        { onMouseDown: function onMouseDown(e) {
+            return _this17.handleSelect(e);
+          },
+          onClick: function onClick() {
+            return _this17.setState({ effMode: !_this17.state.effMode });
+          }, className: 'workBreakLabel' },
+        React.createElement(
+          'h2',
+          null,
+          displayEff
+        ),
+        React.createElement(
+          'p',
+          null,
+          'Goal:75%'
+        )
+      );
+    }
+  }]);
+
+  return EfficiencyLabel;
+}(React.Component);
+
+var Control = function (_React$Component12) {
+  _inherits(Control, _React$Component12);
 
   function Control() {
     _classCallCheck(this, Control);
@@ -489,7 +627,7 @@ var Control = function (_React$Component11) {
   }, {
     key: 'render',
     value: function render() {
-      var _this16 = this;
+      var _this19 = this;
 
       var icon = this.props.currentState ? "fa-pause" : "fa-play";
       var btnStr = this.props.currentState ? 'Stop' : 'Start';
@@ -503,8 +641,8 @@ var Control = function (_React$Component11) {
       return React.createElement(
         'div',
         { className: 'controlPanel' },
-        React.createElement(Tags, { onTagSubmit: function onTagSubmit(v) {
-            return _this16.props.onTagChange(v);
+        React.createElement(Tags, { currentState: this.props.currentState, onTagSubmit: function onTagSubmit(v) {
+            return _this19.props.onTagChange(v);
           } }),
         React.createElement(
           'div',
@@ -516,15 +654,7 @@ var Control = function (_React$Component11) {
             btnStr
           )
         ),
-        React.createElement(
-          'div',
-          { className: 'tagLabel' },
-          React.createElement(
-            'h2',
-            null,
-            this.props.currentTag
-          )
-        )
+        React.createElement(EfficiencyLabel, { state: this.props.currentState, anchor: this.props.lastElem })
       );
     }
   }]);
@@ -532,22 +662,22 @@ var Control = function (_React$Component11) {
   return Control;
 }(React.Component);
 
-var App = function (_React$Component12) {
-  _inherits(App, _React$Component12);
+var App = function (_React$Component13) {
+  _inherits(App, _React$Component13);
 
   function App(props) {
     _classCallCheck(this, App);
 
-    var _this17 = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
+    var _this20 = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
 
-    _this17.id = 0;
-    _this17.state = {
+    _this20.id = 0;
+    _this20.state = {
       isActive: false,
       currentTag: 'None',
       history: []
     };
-    _this17.setTag = _this17.setTag.bind(_this17);
-    return _this17;
+    _this20.setTag = _this20.setTag.bind(_this20);
+    return _this20;
   }
 
   _createClass(App, [{
@@ -564,7 +694,6 @@ var App = function (_React$Component12) {
         isActive: !currentState,
         currentTag: tag
       });
-      global.isActive = !currentState;
     }
   }, {
     key: 'componentDidUpdate',
@@ -581,26 +710,30 @@ var App = function (_React$Component12) {
       if (document.cookie) {
         var cookie = document.cookie;
         var lastCookie = cookie.split(': ')[cookie.split(': ').length - 1];
-        console.log(getCookie('None'));
       }
       this.$e.addEventListener("click", function (e) {});
     }
   }, {
     key: 'render',
     value: function render() {
-      var _this18 = this;
+      var _this21 = this;
+
+      var currentHistory = this.state.history;
+      var lastHistoryElem = currentHistory[currentHistory.length - 1];
 
       return React.createElement(
         'div',
         { ref: function ref(e) {
-            return _this18.$e = e;
+            return _this21.$e = e;
           }, className: 'wrapper' },
-        React.createElement(Control, { currentTag: this.state.currentTag,
+        React.createElement(Control, { currentState: this.state.isActive,
+          currentTag: this.state.currentTag,
           onTagChange: function onTagChange(v) {
-            return _this18.setTag(v);
+            return _this21.setTag(v);
           },
-          currentState: this.state.isActive }),
-        React.createElement(View, { listElems: this.state.history })
+          lastElem: lastHistoryElem }),
+        React.createElement(View, { currentState: this.state.isActive,
+          listElems: this.state.history })
       );
     }
   }]);
@@ -611,10 +744,6 @@ var App = function (_React$Component12) {
 ReactDOM.render(React.createElement(App, { tagList: tags }), document.getElementById('root'));
 
 var tags = ['JS', 'Drawing', 'English', 'Swedish'];
-
-var global = {
-  isActive: false
-};
 
 function formatDate() {
   var h = 0,
