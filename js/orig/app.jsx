@@ -63,7 +63,7 @@ class CurrentWorkTime extends React.Component {
       result += 86400; 
     }
     let convResult = dateSecConverter(result);
-    convResult = formatDate(convResult[0], convResult[1], convResult[2]).split(':').join(' : ');
+    convResult = formatDate(convResult, ' : ');
     
   
     this.setState({workTime: convResult});
@@ -85,8 +85,8 @@ class SubTimeCell extends React.Component {
     }
   } 
 
-  componentWillUpdate() {
-    if (this.props.currentState && this.state.break != '') {
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.currentState) {
       clearInterval(this.timerID);
     }
   }
@@ -240,7 +240,7 @@ class TagForm extends React.Component {
     super(props);
     this.state = {
       value: '',
-      isHandlerAttached: this.props.autoFocus,
+      isHandlerAttached: this.props.autoFocus
     }
 
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -249,11 +249,16 @@ class TagForm extends React.Component {
   }
 
   componentDidMount() {
-    let btnListener = function() {
+    console.log('Mounted');
+    let btnClickListener = function() {
+      console.log('btnClick');
       this.handleSubmit();
     }.bind(this);
 
-    document.querySelector('.controlStartBtn').addEventListener("click", btnListener);
+
+    document.querySelector('.controlStartBtn').onkeypress = (e) => {if (e.keyCode == 13) return false}
+    document.querySelector('.controlStartBtn').addEventListener("click", btnClickListener);
+
 
     this.windowListener = function(e) {
       if (e.keyCode == 13) this.handleSubmit();
@@ -300,7 +305,6 @@ class TagForm extends React.Component {
   }
 }
 
-
 class Tags extends React.Component {
 
   render() {
@@ -319,8 +323,8 @@ class EfficiencyLabel extends React.Component {
   constructor(props) {
     super(props);
 
-    this.workTime = 0;
-    this.restTime = 0;
+    this.workTime = 1;
+    this.restTime = 1;
 
     this.lastState = this.props.state;
 
@@ -334,7 +338,9 @@ class EfficiencyLabel extends React.Component {
   }
 
   componentDidMount() {
-    this.startTime = formatDate(global.startTime.getHours(), global.startTime.getMinutes(), global.startTime.getSeconds());
+    let now = [global.startTime.getHours(), global.startTime.getMinutes(), global.startTime.getSeconds()];
+    this.startTime = formatDate(now);
+    this.lastCall = dateSecConverter(now);
     this.timerID = setInterval(
       () => this.calculateEfficiency(),
       1000
@@ -361,11 +367,11 @@ class EfficiencyLabel extends React.Component {
       this.restTime = value;
     } else {
         value = nowSecs - this.lastCall;
-
-        if ( this.lastState == this.props.state) { // while keeping working or resting
+        if ( this.lastState == this.props.state) { //keeps working or resting
           if (this.props.state) {
             this.workTime += value;
           } else {
+            
             this.restTime += value;
           }
         } else {
@@ -375,12 +381,9 @@ class EfficiencyLabel extends React.Component {
 
     this.lastCall = nowSecs;
 
-    console.log('workT : '+ this.workTime +';'+'restT : ' + this.restTime )
-
     let wrkTimeArray = dateSecConverter(this.workTime);
     let wholeTimeArray = dateSecConverter(this.workTime + this.restTime);
     let effDate = wrkTimeArray[0] + 'h' + wrkTimeArray[1] + 'm/' + wholeTimeArray[0] + 'h' + wholeTimeArray[1] + 'm';
-
 
     let perc = Math.round((this.workTime / (this.workTime + this.restTime))*10000)/100 + '%';
     this.setState( {
@@ -422,7 +425,6 @@ class Control extends React.Component {
     let hr = now.getHours();
     let mn = now.getMinutes();
 
-    let currentDate = formatDate(hr, mn);
     return(
 
       <div className="controlPanel">
@@ -457,7 +459,7 @@ class App extends React.Component {
     let now = new Date();
     let history = this.state.history.concat([
       {
-        [tag] : formatDate(now.getHours(), now.getMinutes(), now.getSeconds()),
+        [tag] : formatDate([now.getHours(), now.getMinutes(), now.getSeconds()]),
         id: this.id++
       }
     ]);
@@ -514,15 +516,15 @@ let tags = ['JS', 'Drawing', 'English', 'Swedish'];
 
 
 
-function formatDate(...args) {
+function formatDate(args, separator=':') {
   let h = 0, m = 0, s = 0;
   
   if (args.length > 1) {
     h = args[0];
     m = args[1];
     s = args[2];
-  } else if (args.length == 1){
-    [h, m, s] = args[0];
+  } else if (args.length == 1){ 
+    [h, m, s] = args;
   }
   
   
@@ -530,9 +532,9 @@ function formatDate(...args) {
   m = m > 9 ? m.toString() : '0' + m.toString();
   if (s != undefined) {
     s = s > 9 ? s.toString() : '0' + s.toString();
-    return (h + ':' + m + ':' + s)
+    return (h + separator + m + separator + s)
   } else {
-    return (h + ' : ' + m);
+    return (h + separator + m);
   }
 }
 
@@ -543,9 +545,14 @@ function dateSecConverter(value, separator) {
     let hr = value/3600|0;
     let mn = (value-hr*3600)/60|0;
     let sc = value%60;
-
-    return result.concat(hr, mn, sc);
-  } else {
+    
+    result = result.concat(hr, mn, sc);
+    
+    if (separator) return result.join(separator);
+    
+    return result
+  } else if (typeof value == "object"||"string" && separator !== undefined) {
+    if (typeof value == 'string') value = value.split(separator);
     result = 0;
 
     result += value[0] * 3600;

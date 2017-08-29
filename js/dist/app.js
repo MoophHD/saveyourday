@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -124,7 +126,7 @@ var CurrentWorkTime = function (_React$Component4) {
         result += 86400;
       }
       var convResult = dateSecConverter(result);
-      convResult = formatDate(convResult[0], convResult[1], convResult[2]).split(':').join(' : ');
+      convResult = formatDate(convResult, ' : ');
 
       this.setState({ workTime: convResult });
     }
@@ -158,9 +160,9 @@ var SubTimeCell = function (_React$Component5) {
   }
 
   _createClass(SubTimeCell, [{
-    key: 'componentWillUpdate',
-    value: function componentWillUpdate() {
-      if (this.props.currentState && this.state.break != '') {
+    key: 'componentWillReceiveProps',
+    value: function componentWillReceiveProps(nextProps) {
+      if (nextProps.currentState) {
         clearInterval(this.timerID);
       }
     }
@@ -390,11 +392,16 @@ var TagForm = function (_React$Component9) {
   _createClass(TagForm, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
-      var btnListener = function () {
+      console.log('Mounted');
+      var btnClickListener = function () {
+        console.log('btnClick');
         this.handleSubmit();
       }.bind(this);
 
-      document.querySelector('.controlStartBtn').addEventListener("click", btnListener);
+      document.querySelector('.controlStartBtn').onkeypress = function (e) {
+        if (e.keyCode == 13) return false;
+      };
+      document.querySelector('.controlStartBtn').addEventListener("click", btnClickListener);
 
       this.windowListener = function (e) {
         if (e.keyCode == 13) this.handleSubmit();
@@ -497,8 +504,8 @@ var EfficiencyLabel = function (_React$Component11) {
 
     var _this15 = _possibleConstructorReturn(this, (EfficiencyLabel.__proto__ || Object.getPrototypeOf(EfficiencyLabel)).call(this, props));
 
-    _this15.workTime = 0;
-    _this15.restTime = 0;
+    _this15.workTime = 1;
+    _this15.restTime = 1;
 
     _this15.lastState = _this15.props.state;
 
@@ -517,7 +524,9 @@ var EfficiencyLabel = function (_React$Component11) {
     value: function componentDidMount() {
       var _this16 = this;
 
-      this.startTime = formatDate(global.startTime.getHours(), global.startTime.getMinutes(), global.startTime.getSeconds());
+      var now = [global.startTime.getHours(), global.startTime.getMinutes(), global.startTime.getSeconds()];
+      this.startTime = formatDate(now);
+      this.lastCall = dateSecConverter(now);
       this.timerID = setInterval(function () {
         return _this16.calculateEfficiency();
       }, 1000);
@@ -546,12 +555,12 @@ var EfficiencyLabel = function (_React$Component11) {
         this.restTime = value;
       } else {
         value = nowSecs - this.lastCall;
-
         if (this.lastState == this.props.state) {
-          // while keeping working or resting
+          //keeps working or resting
           if (this.props.state) {
             this.workTime += value;
           } else {
+
             this.restTime += value;
           }
         } else {
@@ -560,8 +569,6 @@ var EfficiencyLabel = function (_React$Component11) {
       }
 
       this.lastCall = nowSecs;
-
-      console.log('workT : ' + this.workTime + ';' + 'restT : ' + this.restTime);
 
       var wrkTimeArray = dateSecConverter(this.workTime);
       var wholeTimeArray = dateSecConverter(this.workTime + this.restTime);
@@ -637,7 +644,6 @@ var Control = function (_React$Component12) {
       var hr = now.getHours();
       var mn = now.getMinutes();
 
-      var currentDate = formatDate(hr, mn);
       return React.createElement(
         'div',
         { className: 'controlPanel' },
@@ -687,7 +693,7 @@ var App = function (_React$Component13) {
 
       var currentState = this.state.isActive;
       var now = new Date();
-      var history = this.state.history.concat([(_ref = {}, _defineProperty(_ref, tag, formatDate(now.getHours(), now.getMinutes(), now.getSeconds())), _defineProperty(_ref, 'id', this.id++), _ref)]);
+      var history = this.state.history.concat([(_ref = {}, _defineProperty(_ref, tag, formatDate([now.getHours(), now.getMinutes(), now.getSeconds()])), _defineProperty(_ref, 'id', this.id++), _ref)]);
 
       this.setState({
         history: history,
@@ -745,32 +751,32 @@ ReactDOM.render(React.createElement(App, { tagList: tags }), document.getElement
 
 var tags = ['JS', 'Drawing', 'English', 'Swedish'];
 
-function formatDate() {
+function formatDate(args) {
+  var separator = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : ':';
+
   var h = 0,
       m = 0,
       s = 0;
 
-  if (arguments.length > 1) {
-    h = arguments.length <= 0 ? undefined : arguments[0];
-    m = arguments.length <= 1 ? undefined : arguments[1];
-    s = arguments.length <= 2 ? undefined : arguments[2];
-  } else if (arguments.length == 1) {
-    var _ref2 = arguments.length <= 0 ? undefined : arguments[0];
+  if (args.length > 1) {
+    h = args[0];
+    m = args[1];
+    s = args[2];
+  } else if (args.length == 1) {
+    var _args = _slicedToArray(args, 3);
 
-    var _ref3 = _slicedToArray(_ref2, 3);
-
-    h = _ref3[0];
-    m = _ref3[1];
-    s = _ref3[2];
+    h = _args[0];
+    m = _args[1];
+    s = _args[2];
   }
 
   h = h > 9 ? h.toString() : '0' + h.toString();
   m = m > 9 ? m.toString() : '0' + m.toString();
   if (s != undefined) {
     s = s > 9 ? s.toString() : '0' + s.toString();
-    return h + ':' + m + ':' + s;
+    return h + separator + m + separator + s;
   } else {
-    return h + ' : ' + m;
+    return h + separator + m;
   }
 }
 
@@ -782,8 +788,13 @@ function dateSecConverter(value, separator) {
     var mn = (value - hr * 3600) / 60 | 0;
     var sc = value % 60;
 
-    return result.concat(hr, mn, sc);
-  } else {
+    result = result.concat(hr, mn, sc);
+
+    if (separator) return result.join(separator);
+
+    return result;
+  } else if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) == "object" || "string" && separator !== undefined) {
+    if (typeof value == 'string') value = value.split(separator);
     result = 0;
 
     result += value[0] * 3600;
