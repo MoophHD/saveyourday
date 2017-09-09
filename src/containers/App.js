@@ -24,6 +24,7 @@ class App extends Component {
           onTagChange={changeTag} /> 
       </Control>
       <Page
+            tag={tag}
             state={state}
             slices={slices}
             chuncks={chuncks}/>

@@ -1,3 +1,8 @@
+body {
+  background-color: #F4F7F6;
+  line-height: 1.41;
+}
+
 .app {
   padding-left: 15px;
   padding-right: 15px;
@@ -20,8 +25,9 @@
   margin: 15px 0;
 }
 
-.timeRow div {
+.timeRow > div {
   font-size: 2em;
+  padding: 20px 0;
 }
 
 
@@ -29,3 +35,12 @@
   font-size: 1em;
 }
 
+.timeRow > .startChunck,
+.timeRow > .finishChunck {
+  font-size: 1.25em;
+  padding: 13px 0;
+}
+
+.tagLabel {
+  text-transform: uppercase;
+}

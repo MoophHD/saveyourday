@@ -11,7 +11,7 @@ export default class Page extends Component {
 		}
 	}
 	render() {
-      const {chuncks, slices} = this.props; // eslint-disable-line
+      const {chuncks, slices, tag} = this.props; // eslint-disable-line
       
       const { allIds, byId } = chuncks;
 
@@ -23,26 +23,39 @@ export default class Page extends Component {
   
         let finishChunck = len-i == 1 ? null : allIds[i+1];
         let finishChunckDate = null;
-        if (finishChunck) finishChunckDate = byId[finishChunck].date;
-        
-        if ( !finishChunckDate && this.lastFinish) {
-          listItems.unshift(
-          <div key={'_timerID' + i}>
-            <Timer  start={this.lastFinish} finish={startChunckDate}/>
-          </div>);
-        }
-       
-        
-        if (finishChunckDate) this.lastFinish = finishChunckDate;
 
+        if (finishChunck) finishChunckDate = byId[finishChunck].date;
+        let formattedStart = startChunckDate.split(':');
+        formattedStart.pop();
+        formattedStart = formattedStart.join(' : ');
+
+        let formattedFinish = null; 
+        if (finishChunckDate) {
+          console.log('1');
+          formattedFinish = startChunckDate.split(':');
+          formattedFinish.pop();
+          formattedFinish = formattedFinish.join(' : ');
+        }
+        
         listItems.unshift(<TimeRow
           key={i}
-          start={startChunckDate}
-          finish={finishChunckDate}
+          tag={tag}
+          start={formattedStart}
+          finish={formattedFinish}
           timer={<Timer start={startChunckDate} finish={finishChunckDate}/>}
         />
       )
-      console.log(listItems);
+      if (listItems.length % 2 == 1 && this.lastFinish && i != len-2 && i != len-1) {
+        console.log(this.lastFinish + ' : ' + startChunckDate);
+        listItems.unshift(
+          <div key={'_breakID' + i}>
+            <Timer  start={this.lastFinish} finish={startChunckDate}/>
+          </div>)
+      }
+
+      if (finishChunckDate) {
+        this.lastFinish = finishChunckDate;
+      }
       } 
 			return(
 				<div className="page">

@@ -43,6 +43,13 @@ module.exports = {
       {
         test:   /\.css$/,
         loader: "style-loader!css-loader!postcss-loader"
+      },
+      {
+        test: /\.scss$/,
+        loader: "style-loader!css-loader!sass-loader",
+        include: [
+          path.resolve(__dirname, "src"),
+        ]
       }
     ]
   },

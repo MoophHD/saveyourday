@@ -28,7 +28,7 @@ export default class Timer extends Component {
         let difference = dateSecConverted([now.getHours(), now.getMinutes(), now.getSeconds()]) - this.anchorSecs;
 
         if (this.props.finish) difference = dateSecConverted(this.props.finish) - this.anchorSecs;
-
+        if (Math.sign(difference) == -1) difference = 0;
         let resultArr =  formatDate(dateSecConverted(difference).split(':')).split(':');
         if (resultArr[0] == '00') resultArr.shift();
 

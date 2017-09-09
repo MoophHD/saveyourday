@@ -1,12 +1,12 @@
 {
-  "name": "SaveYourTime",
+  "name": "saveyourtime",
   "version": "1.0.0",
   "description": "Redux RU tutorial",
   "main": "index.js",
   "scripts": {
     "start": "node server.js"
   },
-  "author": "Sizykh Danila",
+  "author": "moophhd",
   "license": "MIT",
   "devDependencies": {
     "autoprefixer": "^6.3.1",
