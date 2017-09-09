@@ -1,0 +1,31 @@
+.app {
+  padding-left: 15px;
+  padding-right: 15px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+}
+
+.chunck:nth-child(2n) {
+  display: inline-block;
+  margin-bottom: 25px;
+}
+
+.timeRow {
+  display: grid;
+  grid-template-columns: 35% 35% 15% 15%;
+  grid-template-rows: repeat(auto-fill, 75px);
+  background-color: #389C90;
+  color: #F4F7F6;
+  text-align: center;
+  margin: 15px 0;
+}
+
+.timeRow div {
+  font-size: 2em;
+}
+
+
+.workTime .timer {
+  font-size: 1em;
+}
+
