@@ -18,6 +18,7 @@ export default class Page extends Component {
       let listItems = [];
   
       for (let i = 0, len = allIds.length; i < len; i += 2) {
+        let realIndex = (len-i == 1 ) ? i : i+1;
         let startChunck = allIds[i];
         let startChunckDate = byId[startChunck].date;
   
@@ -31,25 +32,23 @@ export default class Page extends Component {
 
         let formattedFinish = null; 
         if (finishChunckDate) {
-          console.log('1');
           formattedFinish = startChunckDate.split(':');
           formattedFinish.pop();
           formattedFinish = formattedFinish.join(' : ');
         }
         
         listItems.unshift(<TimeRow
-          key={i}
+          key={realIndex}
           tag={tag}
           start={formattedStart}
           finish={formattedFinish}
           timer={<Timer start={startChunckDate} finish={finishChunckDate}/>}
         />
       )
-      if (listItems.length % 2 == 1 && this.lastFinish && i != len-2 && i != len-1) {
-        console.log(this.lastFinish + ' : ' + startChunckDate);
+      if (listItems.length % 2 == 1 && this.lastFinish && realIndex != len-1) {
         listItems.unshift(
-          <div key={'_breakID' + i}>
-            <Timer  start={this.lastFinish} finish={startChunckDate}/>
+          <div className="breakTimer" key={'_breakID' + realIndex}>
+            <Timer cut={true} start={slices[realIndex+1].start} finish={slices[realIndex+1].finish}/>
           </div>)
       }
 
@@ -59,7 +58,10 @@ export default class Page extends Component {
       } 
 			return(
 				<div className="page">
-          {(allIds.length % 2 == 0 && allIds.length > 1)? <Timer start={byId[allIds.length].date}/> : null}
+          {(allIds.length % 2 == 0 && allIds.length > 1) ? <div className="breakTimer"> 
+                                                            <Timer cut={true} start={slices[slices.length-1].finish} />
+                                                           </div>  
+                                                          : null}
           {listItems}
         </div>
         )

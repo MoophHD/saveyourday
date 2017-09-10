@@ -11,10 +11,10 @@ const initialState = {
   currentState: false,
   timeSlices: {
     lastDate: formatDate([now.getHours(), now.getMinutes(), now.getSeconds()]),
-    slices: [{state: true, start: '1', finish: '1'}]},
+    slices: []
+  },
   chuncks: {
     byId : {
-
     },
     allIds : []
   }, 

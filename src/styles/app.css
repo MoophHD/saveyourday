@@ -1,11 +1,11 @@
 body {
   background-color: #F4F7F6;
-  line-height: 1.41;
+  line-height: 1.45;
 }
 
 .app {
-  padding-left: 15px;
-  padding-right: 15px;
+  padding-left: 10px;
+  padding-right: 10px;
   font-family: 'Roboto', sans-serif;
   font-size: 14px;
 }
@@ -17,12 +17,11 @@ body {
 
 .timeRow {
   display: grid;
-  grid-template-columns: 35% 35% 15% 15%;
+  grid-template-columns: 30% 40% 15% 15%;
   grid-template-rows: repeat(auto-fill, 75px);
   background-color: #389C90;
   color: #F4F7F6;
   text-align: center;
-  margin: 15px 0;
 }
 
 .timeRow > div {
@@ -43,4 +42,16 @@ body {
 
 .tagLabel {
   text-transform: uppercase;
+}
+
+.breakTimer {
+  padding: 5px 0;
+  font-size: 1.25em;
+  text-align: center;
+}
+
+.controlPanel {
+  display: grid;
+  grid-template-columns: 30% 40% 30%;
+  padding: 35px 100px;
 }
