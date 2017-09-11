@@ -14,7 +14,6 @@ class App extends Component {
     <div className="app">
       <Control />
       <Page
-            tag={tag}
             state={state}
             slices={slices}
             chuncks={chuncks}/>

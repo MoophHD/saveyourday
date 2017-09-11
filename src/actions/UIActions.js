@@ -1,14 +1,21 @@
 import {
     TOGGLE_STATE,
-    CHANGE_TAG
+    CHANGE_TAG,
+    APPEND_SLICE
 } from '../constants/Control'
 
 
-export function toggleState(date, id) {
+export function toggleState(id) {
     return {
         type: TOGGLE_STATE,
-        payload: date,
         id: id
+    }
+}
+
+export function appendSlice(date) {
+    return {
+        type: APPEND_SLICE,
+        payload: date
     }
 }
 

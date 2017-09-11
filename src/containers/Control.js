@@ -8,17 +8,18 @@ import * as uiActions from '../actions/UIActions'// eslint-disable-line
 
 class Control extends Component {
     render() {
-        console.log(this.props)
-        const { state } = this.props;
-        const {toggleState, changeTag} = this.props.uiActions;
+        const { state, tag } = this.props;
+        const {toggleState, changeTag, appendSlice} = this.props.uiActions;
         
         return(
             <div className="controlPanel">
                 <h1 style={{padding: '10px'}}>{state ? 'ACTIVE' : 'INACTIVE'}</h1>
-                <ControlForm         
+                <ControlForm   
+                    tag={tag}      
                     state={state}
                     onToggle={toggleState}
-                    onTagChange={changeTag} />
+                    onTagChange={changeTag}
+                    onSliceAdd={appendSlice} />
                 <button onClick={() => toggleState()}>{state ? 'STOP' : 'START'}</button>
             </div>
         )

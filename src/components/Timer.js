@@ -13,7 +13,7 @@ export default class Timer extends Component {
     }
 
     componentDidMount() {
-
+        this.props.cut ? this.setState({time: '00 : 00'}) : this.setState({time : '00 : 00 : 00'});
         this.anchorSecs = dateSecConverted(this.props.start);
         if (this.props.finish) {this.calculateTime(); return}
         this.id = setInterval(() => this.calculateTime(), 1000)

@@ -1,6 +1,7 @@
 import {
   TOGGLE_STATE,
-  CHANGE_TAG
+  CHANGE_TAG,
+  APPEND_SLICE
 } from '../constants/Control'
 import formatDate from '../gist/formatDate'
 
@@ -25,15 +26,17 @@ const initialState = {
 export default function ui(state = initialState, action) {
   switch (action.type) {
     case TOGGLE_STATE:
-    let slices = [...state.timeSlices.slices, {state: state.currentState, start:state.timeSlices.lastDate, finish:action.payload}];
+        let id = action.id != undefined ? action.id : state.chuncks.allIds.length; 
         return {...state,
-                timeSlices: {lastDate: action.payload, slices: slices},
                  currentState: !state.currentState,
-                 chuncks: {allIds : [...state.chuncks.allIds, action.id],
-                           byId: {...state.chuncks.byId, [action.id]: {date: action.payload, tag: state.currentTag ? state.currentTag : 'None'}}}
+                 chuncks: {allIds : [...state.chuncks.allIds, id],
+                           byId: {...state.chuncks.byId, [id]: {date: state.timeSlices.lastDate, tag: state.currentTag ? state.currentTag : 'None'}}}
                 }
     case CHANGE_TAG:
         return {...state, currentTag: action.payload }
+    case APPEND_SLICE:
+        let slices = [...state.timeSlices.slices, {state: state.currentState, start:state.timeSlices.lastDate, finish:action.payload}];    
+        return {...state, timeSlices: {lastDate:action.payload, slices:slices}}
     default:
       return state
   }

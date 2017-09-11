@@ -27,11 +27,14 @@ export default class ControlForm extends Component {
     handleSubmit(e) {
         let now = new Date();
         e.preventDefault();
-        if (this.props.state && this.state.value != this.lastTag)
-            this.props.onToggle(formatDate([now.getHours(), now.getMinutes(), now.getSeconds()], ':'), ++this.id);
+        // if (this.props.state && this.state.value != this.lastTag)
+            // this.props.onToggle(formatDate([now.getHours(), now.getMinutes(), now.getSeconds()], ':'), ++this.id);
 
-        this.props.onTagChange(this.state.value);
-        this.props.onToggle(formatDate([now.getHours(), now.getMinutes(), now.getSeconds()], ':'), ++this.id);
+        if (this.props.tag != this.state.value) this.props.onTagChange(this.state.value);
+        this.props.onSliceAdd(formatDate([now.getHours(), now.getMinutes(), now.getSeconds()], ':'));
+        this.props.onToggle(++this.id);
+
+
 
 
         this.lastTag = this.state.value;

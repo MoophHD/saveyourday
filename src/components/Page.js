@@ -11,7 +11,7 @@ export default class Page extends Component {
 		}
 	}
 	render() {
-      const {chuncks, slices, tag} = this.props; // eslint-disable-line
+      const {chuncks, slices} = this.props; // eslint-disable-line
       
       const { allIds, byId } = chuncks;
 
@@ -21,7 +21,9 @@ export default class Page extends Component {
         let realIndex = (len-i == 1 ) ? i : i+1;
         let startChunck = allIds[i];
         let startChunckDate = byId[startChunck].date;
-  
+
+        let tag = byId[startChunck].tag;
+          
         let finishChunck = len-i == 1 ? null : allIds[i+1];
         let finishChunckDate = null;
 
