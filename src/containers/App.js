@@ -4,18 +4,17 @@ import { connect } from 'react-redux'
 import Control from './Control'// eslint-disable-line
 import Page from '../components/Page'// eslint-disable-line
 import * as pageActions from '../actions/PageActions' // eslint-disable-line
-import * as uiActions from '../actions/UIActions'// eslint-disable-line
+import * as controlActions from '../actions/ControlActions'// eslint-disable-line
 
 class App extends Component {
   render() {
-    const {chuncks, state, tag} = this.props; // eslint-disable-line 
-    const {slices} = this.props.timeSlices;
+    const {chuncks, state, tag, timeSlices} = this.props; // eslint-disable-line 
     return (
     <div className="app">
       <Control />
       <Page
             state={state}
-            slices={slices}
+            timeSlices={timeSlices}
             chuncks={chuncks}/>
     </div>)
   }
@@ -23,16 +22,16 @@ class App extends Component {
 
 function mapStateToProps(state) {
   return {
-    chuncks: state.ui.chuncks,
-    state: state.ui.currentState,
-    tag: state.ui.currentTag,
-    timeSlices: state.ui.timeSlices
+    chuncks: state.control.chuncks,
+    state: state.control.currentState,
+    tag: state.control.currentTag,
+    timeSlices: state.control.timeSlices
   }
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    uiActions: bindActionCreators(uiActions, dispatch)  // eslint-disable-line
+    controlActions: bindActionCreators(controlActions, dispatch)  // eslint-disable-line
   }
 }
 

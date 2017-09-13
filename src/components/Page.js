@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types' // eslint-disable-line
 import TimeRow from './TimeRow'
@@ -9,64 +10,58 @@ export default class Page extends Component {
 		this.state = {
 			workTime: 0
 		}
-	}
+  }
+
 	render() {
-      const {chuncks, slices} = this.props; // eslint-disable-line
+      const {chuncks, timeSlices} = this.props; // eslint-disable-line
       
       const { allIds, byId } = chuncks;
-
+      const {slices, lastDate} = timeSlices
       let listItems = [];
-  
-      for (let i = 0, len = allIds.length; i < len; i += 2) {
-        let realIndex = (len-i == 1 ) ? i : i+1;
-        let startChunck = allIds[i];
-        let startChunckDate = byId[startChunck].date;
+      //let firstBreak = slices.shift(); 
 
-        let tag = byId[startChunck].tag;
+      for (let i = 1, len = slices.length; i < len +1; i++) { // not rendering the 1st break
+        console.log(`ind = ${i}`);
+        console.log(byId)
+        let startDate,
+            finishDate,
+            toAppend,
+            state = !slices[i-1].state,
+            tag = byId[allIds[i-1]].tag;
+        console.log(`${i} - iterator --- ${slices.length} - list -- ${slices[i] ? slices[i].state : ''}`);
+        if (i == len) {
+          startDate = lastDate;
+          finishDate = null;
           
-        let finishChunck = len-i == 1 ? null : allIds[i+1];
-        let finishChunckDate = null;
-
-        if (finishChunck) finishChunckDate = byId[finishChunck].date;
-        let formattedStart = startChunckDate.split(':');
-        formattedStart.pop();
-        formattedStart = formattedStart.join(' : ');
-
-        let formattedFinish = null; 
-        if (finishChunckDate) {
-          formattedFinish = startChunckDate.split(':');
-          formattedFinish.pop();
-          formattedFinish = formattedFinish.join(' : ');
+        } else {
+          startDate = slices[i].start;
+          finishDate = slices[i].finish;
         }
-        
-        listItems.unshift(<TimeRow
-          key={realIndex}
-          tag={tag}
-          start={formattedStart}
-          finish={formattedFinish}
-          timer={<Timer start={startChunckDate} finish={finishChunckDate}/>}
-        />
-      )
-      if (listItems.length % 2 == 1 && this.lastFinish && realIndex != len-1) {
-        listItems.unshift(
-          <div className="breakTimer" key={'_breakID' + realIndex}>
-            <Timer cut={true} start={slices[realIndex+1].start} finish={slices[realIndex+1].finish}/>
-          </div>)
-      }
 
-      if (finishChunckDate) {
-        this.lastFinish = finishChunckDate;
-      }
+        if (state) {
+          toAppend = <TimeRow 
+            key={i}
+            tag={tag}
+            start={startDate}
+            finish={finishDate}
+            timer={<Timer cut={false} start={startDate} finish={finishDate}/>}
+            />
+        } else {
+          toAppend = <div className="breakTimer" key={'_breakID' + i}>
+                  <Timer cut={true} start={startDate} finish={finishDate}/>
+              </div>
+          }
+
+          listItems.unshift(toAppend);
       } 
-			return(
-				<div className="page">
-          {(allIds.length % 2 == 0 && allIds.length > 1) ? <div className="breakTimer"> 
-                                                            <Timer cut={true} start={slices[slices.length-1].finish} />
-                                                           </div>  
-                                                          : null}
-          {listItems}
-        </div>
-        )
+
+
+
+      return(
+          <div className="page">
+            {listItems}
+          </div>
+      )
 
         }
 	}

@@ -3,13 +3,13 @@ import { bindActionCreators } from 'redux' // eslint-disable-line
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types' // eslint-disable-line
 import ControlForm from '../components/ControlForm'
-import * as uiActions from '../actions/UIActions'// eslint-disable-line
+import * as controlActions from '../actions/ControlActions'// eslint-disable-line
 
 
 class Control extends Component {
     render() {
         const { state, tag } = this.props;
-        const {toggleState, changeTag, appendSlice} = this.props.uiActions;
+        const {toggleState, changeTag, appendSlice} = this.props.controlActions;
         
         return(
             <div className="controlPanel">
@@ -33,16 +33,16 @@ Control.propTypes = {
 
 function mapStateToProps(state) {
     return {
-        chuncks: state.ui.chuncks,
-        state: state.ui.currentState,
-        tag: state.ui.currentTag,
-        timeSlices: state.ui.timeSlices
+        chuncks: state.control.chuncks,
+        state: state.control.currentState,
+        tag: state.control.currentTag,
+        timeSlices: state.control.timeSlices
     }
 }
   
 function mapDispatchToProps(dispatch) {
     return {
-        uiActions: bindActionCreators(uiActions, dispatch) 
+        controlActions: bindActionCreators(controlActions, dispatch) 
     }
 }
 

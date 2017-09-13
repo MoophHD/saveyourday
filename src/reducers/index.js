@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux'
-import ui from './ui'
+import control from './control'
 
 export default combineReducers({
-  ui
+  control
 })
