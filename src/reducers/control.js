@@ -41,7 +41,6 @@ export default function control(state = initialState, action) {
         return {...state, timeSlices: {lastDate:action.payload, slices:slices}}
     case TOGGLE_TWICE:
         id = action.id != undefined ? action.id : state.chuncks.allIds.length;
-        console.log(id);
         return {
                   ...state,
                    currentState: state.currentState,

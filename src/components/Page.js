@@ -21,14 +21,11 @@ export default class Page extends Component {
       //let firstBreak = slices.shift(); 
 
       for (let i = 1, len = slices.length; i < len +1; i++) { // not rendering the 1st break
-        console.log(`ind = ${i}`);
-        console.log(byId)
         let startDate,
             finishDate,
             toAppend,
             state = !slices[i-1].state,
             tag = byId[allIds[i-1]].tag;
-        console.log(`${i} - iterator --- ${slices.length} - list -- ${slices[i] ? slices[i].state : ''}`);
         if (i == len) {
           startDate = lastDate;
           finishDate = null;
