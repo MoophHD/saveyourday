@@ -1,13 +1,17 @@
+*{
+  box-sizing: border-box;
+}
+
 body {
   background-color: #F4F7F6;
   line-height: 1.45;
+  font-size: 14px;
 }
 
 .app {
   padding-left: 10px;
   padding-right: 10px;
   font-family: 'Roboto', sans-serif;
-  font-size: 14px;
 }
 
 .chunck:nth-child(2n) {
@@ -40,8 +44,62 @@ body {
   padding: 13px 0;
 }
 
-.tagLabel {
+.tagPanel {
+  text-align: center;
+  padding: 15px 0px;
+}
+
+.tagPanel > h2 {
+  font-weight: 700;
+  font-size: 1em;
+  margin: 0px 0px 10px;
+}
+
+.tagPanel input {
+  padding: 7.5px 10px;
+  width: 250px;
+  margin: 0;
+  border-radius: 3px;
+  border: 0;
+}
+
+.tagPanel input:focus {
+  outline-color: #389C90;
+}
+
+.controlBtn {
+  text-align: center;
+  padding: 20px 0px;
+}
+
+.controlBtn > button {
+  background-color: #389C90;
+  color: #F4F7F6;
+  border: 0;
+  outline: 0;
+  border-radius: 3px;
   text-transform: uppercase;
+  font-weight: 500;
+  width: 50%;
+  height: 65px;
+  transition: all ease .5s;
+}
+
+.controlBtn > button > .fa {
+  margin-right: 10px;
+}
+
+.controlBtn > button:hover {
+  background-color: rgb(63, 175, 161);
+}
+
+.controlEfficency{
+  text-align: center;
+  padding: 15px 0px;
+}
+
+.controlEfficency >  .effLabel {
+  font-size: 2em;
 }
 
 .breakTimer {

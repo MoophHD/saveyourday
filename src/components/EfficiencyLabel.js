@@ -1,6 +1,4 @@
-/* eslint-disable */
 import React, {Component} from 'react'
-//import formatDate from '../gist/formatDate'
 import dateSecConverter from '../gist/dateSecConverter'
 
 class EfficiencyLabel extends Component {
@@ -16,8 +14,15 @@ class EfficiencyLabel extends Component {
         }
     }
 
-    componentWillReceiveProps({slices}) {
+    componentWillReceiveProps({slices, record}) {
         if (slices.length > 0) this.addTimeToThis(slices[slices.length-1]);
+        if (record != this.props.record) {
+            if (record) {
+                this.id = setInterval(() => this.updateState(), 1000);
+            } else {
+                clearInterval(this.id);
+            }
+        }
     }
 
     addTimeToThis(slice) {
@@ -34,7 +39,6 @@ class EfficiencyLabel extends Component {
 
         let slices = this.props.slices;
 
-        let toAdd;
         for (let i = 0; i < slices.length - 1; i++) {
             this.addTimeToThis(slices[i]);
         }
@@ -58,14 +62,24 @@ class EfficiencyLabel extends Component {
         
         let value = call > lastCall ? call - lastCall : 60 + call - lastCall;
 
+        this.lastCall = call;
+
         this.time += value;
         if (state) this.workTime += value;
-        
 
         let resultPerc = Math.round(this.workTime / this.time * 10000)/100 + '%';
 
+        console.log(this.workTime)
+        let wrkTime = dateSecConverter(this.workTime).split(':').slice(0, -1);
+        let time = dateSecConverter(this.time).split(':').slice(0, -1);
+ 
+
+        let resultTime = `${wrkTime[0]}h${wrkTime[1]}m/${time[0]}h${time[1]}m`
         this.setState((prevState, props) => { // eslint-disable-line
-            return {effPerc: resultPerc}
+            return {
+                effPerc: resultPerc,
+                effTime: resultTime
+            }
         })
     }
 
@@ -74,8 +88,8 @@ class EfficiencyLabel extends Component {
 
 
         return(
-            <div onClick={() => {this.setState({isPercMode: !this.state.isPercMode})}}>
-                {this.state.isPercMode ? this.state.effPerc : this.state.effTime};
+            <div className="effLabel" onClick={() => {this.setState({isPercMode: !this.state.isPercMode})}}>
+                {this.state.isPercMode ? this.state.effPerc : this.state.effTime}
             </div>
         )
     }

@@ -5,14 +5,34 @@ import PropTypes from 'prop-types' // eslint-disable-line
 import ControlForm from '../components/ControlForm'
 import EfficiencyLabel from '../components/EfficiencyLabel'
 import * as controlActions from '../actions/ControlActions'// eslint-disable-line
+import formatDate from '../gist/formatDate'
 
 
 class Control extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isRecording: true
+        }
+    }
+
+    handleClick(e) {
+        const {toggleState, appendSlice} = this.props.controlActions;
+        let now = new Date();
+        e.preventDefault();
+
+        appendSlice(formatDate([now.getHours(), now.getMinutes(), now.getSeconds()], ':'));
+        toggleState();                
+        
+    }
+
     render() {
         const { state, tag, timeSlices } = this.props;
         const {toggleState, changeTag, appendSlice} = this.props.controlActions;
         const { slices, lastDate } = timeSlices;
         
+        
+        let icon = state ? 'fa-play' : 'fa-pause'
         return(
             <div className="controlPanel">
                 <ControlForm   
@@ -21,8 +41,16 @@ class Control extends Component {
                     onToggle={toggleState}
                     onTagChange={changeTag}
                     onSliceAdd={appendSlice} />
-                <button onClick={() => toggleState()}>{state ? 'STOP' : 'START'}</button>
-                <EfficiencyLabel slices={slices} lastDate={lastDate} state={state}/>
+                <div className="controlBtn">
+                    <button onClick={(e) => this.handleClick(e)}>
+                        <i className={`fa ${icon}`}> </i>
+                        {state ? 'STOP' : 'START'}
+                    </button>
+                </div>
+                <div className="controlEfficency">
+                    <EfficiencyLabel slices={slices} lastDate={lastDate} state={state} record={this.state.isRecording}/>   
+                    <button onClick={() => this.setState({isRecording: !this.state.isRecording})}>{this.state.isRecording ? 'Pause record' : 'Continue record'}</button>                
+                </div>
             </div>
         )
     }

@@ -27,8 +27,6 @@ export default class ControlForm extends Component {
     handleSubmit(e) {
         let now = new Date();
         e.preventDefault();
-        // if (this.props.state && this.state.value != this.lastTag)
-            // this.props.onToggle(formatDate([now.getHours(), now.getMinutes(), now.getSeconds()], ':'), ++this.id);
 
         if (this.props.tag != this.state.value) this.props.onTagChange(this.state.value);
         this.props.onSliceAdd(formatDate([now.getHours(), now.getMinutes(), now.getSeconds()], ':'));
@@ -43,6 +41,7 @@ export default class ControlForm extends Component {
     render() {
         return (
             <div className="tagPanel">
+                <h2>Add tag</h2>
                 <form onSubmit={::this.handleSubmit}>
                     <input autoFocus={true}
                            type="text" 
