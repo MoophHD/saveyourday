@@ -69,7 +69,6 @@ class EfficiencyLabel extends Component {
 
         let resultPerc = Math.round(this.workTime / this.time * 10000)/100 + '%';
 
-        console.log(this.workTime)
         let wrkTime = dateSecConverter(this.workTime).split(':').slice(0, -1);
         let time = dateSecConverter(this.time).split(':').slice(0, -1);
  

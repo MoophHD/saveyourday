@@ -32,7 +32,7 @@ class Control extends Component {
         const { slices, lastDate } = timeSlices;
         
         
-        let icon = state ? 'fa-play' : 'fa-pause'
+        let icon = state ? 'fa-pause' : 'fa-play' 
         return(
             <div className="controlPanel">
                 <ControlForm   

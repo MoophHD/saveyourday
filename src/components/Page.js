@@ -1,6 +1,5 @@
-/* eslint-disable */
 import React, { Component } from 'react'
-import PropTypes from 'prop-types' // eslint-disable-line
+import PropTypes from 'prop-types' 
 import TimeRow from './TimeRow'
 import Timer from './Timer'
 
@@ -13,12 +12,11 @@ export default class Page extends Component {
   }
 
 	render() {
-      const {chuncks, timeSlices} = this.props; // eslint-disable-line
+      const {chuncks, timeSlices} = this.props; 
       
       const { allIds, byId } = chuncks;
       const {slices, lastDate} = timeSlices
       let listItems = [];
-      //let firstBreak = slices.shift(); 
 
       for (let i = 1, len = slices.length; i < len +1; i++) { // not rendering the 1st break
         let startDate,

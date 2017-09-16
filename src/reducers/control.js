@@ -2,7 +2,8 @@ import {
   TOGGLE_STATE,
   CHANGE_TAG,
   APPEND_SLICE,
-  TOGGLE_TWICE
+  TOGGLE_TWICE,
+  RESET_STATE
 } from '../constants/Control'
 import formatDate from '../gist/formatDate'
 
@@ -27,16 +28,19 @@ const initialState = {
 export default function control(state = initialState, action) {
   let id;
   switch (action.type) {
+    case RESET_STATE:
+        return {...state, ...action.payload}
     case TOGGLE_STATE:
         id = action.id != undefined ? action.id : state.chuncks.allIds.length; 
         return {...state,
                  currentState: !state.currentState,
                  chuncks: {allIds : [...state.chuncks.allIds, id],
-                           byId: {...state.chuncks.byId, [id]: {date: state.timeSlices.lastDate, tag: state.currentTag ? state.currentTag : 'None'}}}
+                           byId: {...state.chuncks.byId, [id]: {date: state.timeSlices.lastDate, tag:state.currentTag ? state.currentTag : 'None'}}}
                 }
     case CHANGE_TAG:
         return {...state, currentTag: action.payload }
     case APPEND_SLICE:
+        console.log(state.timeSlices.lastDate);
         let slices = [...state.timeSlices.slices, {state: state.currentState, start:state.timeSlices.lastDate, finish:action.payload}];    
         return {...state, timeSlices: {lastDate:action.payload, slices:slices}}
     case TOGGLE_TWICE:

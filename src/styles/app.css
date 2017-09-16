@@ -74,6 +74,7 @@ body {
 
 .controlBtn > button {
   background-color: #389C90;
+  font-weight: bold;
   color: #F4F7F6;
   border: 0;
   outline: 0;

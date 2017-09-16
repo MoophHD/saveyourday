@@ -1,16 +1,31 @@
+/* eslint-disable */
 import React, { Component } from 'react'
-import { bindActionCreators } from 'redux' // eslint-disable-line
+import { bindActionCreators } from 'redux' 
 import { connect } from 'react-redux'
-import Control from './Control'// eslint-disable-line
-import Page from '../components/Page'// eslint-disable-line
-import * as pageActions from '../actions/PageActions' // eslint-disable-line
-import * as controlActions from '../actions/ControlActions'// eslint-disable-line
+import Cookies from 'js-cookie'
+import Control from './Control'
+import Page from '../components/Page'
+import * as controlActions from '../actions/ControlActions'
+
 
 class App extends Component {
+
+
+  componentDidMount() {
+    if (Cookies.get('state')) {
+      this.props.controlActions.resetState(JSON.parse(Cookies.get('state')));
+    }
+  }
+
+  deleteCookies() {
+    Cookies.remove('state');
+  }
+
   render() {
-    const {chuncks, state, tag, timeSlices} = this.props; // eslint-disable-line 
+    const {chuncks, state, timeSlices} = this.props; 
     return (
     <div className="app">
+      <button onClick={::this.deleteCookies}>Get rid of cookies</button>
       <Control />
       <Page
             state={state}
@@ -24,8 +39,8 @@ function mapStateToProps(state) {
   return {
     chuncks: state.control.chuncks,
     state: state.control.currentState,
-    tag: state.control.currentTag,
-    timeSlices: state.control.timeSlices
+    timeSlices: state.control.timeSlices,
+    tag: state.control.currentTag
   }
 }
 

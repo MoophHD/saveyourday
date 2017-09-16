@@ -2,7 +2,8 @@ import {
     TOGGLE_STATE,
     CHANGE_TAG,
     APPEND_SLICE,
-    TOGGLE_TWICE
+    TOGGLE_TWICE,
+    RESET_STATE
 } from '../constants/Control'
 
 
@@ -33,5 +34,12 @@ export function toggleTwice(id, date, tag) {
         id: id,
         previousTag: tag,
         date: date
+    }
+}
+
+export function resetState(newState) {
+    return {
+        type: RESET_STATE,
+        payload: newState
     }
 }
