@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, {Component} from 'react'
 import dateSecConverter from '../gist/dateSecConverter'
 
@@ -14,8 +15,10 @@ class EfficiencyLabel extends Component {
         }
     }
 
-    componentWillReceiveProps({slices, record}) {
-        if (slices.length > 0) this.addTimeToThis(slices[slices.length-1]);
+    componentWillReceiveProps({timeSlices, record}) {
+        let {byId, allIds} = timeSlices;
+        
+        if (allIds.length > 0) this.addTimeToThis(byId[allIds[allIds.length-1]]);
         if (record != this.props.record) {
             if (record) {
                 this.id = setInterval(() => this.updateState(), 1000);
@@ -37,11 +40,11 @@ class EfficiencyLabel extends Component {
         this.time = 1;
         this.lastState = this.props.state;
 
-        let slices = this.props.slices;
+        let {allIds, byId} = this.props.timeSlices;
 
-        for (let i = 0; i < slices.length - 1; i++) {
-            this.addTimeToThis(slices[i]);
-        }
+        allIds.forEach(function(id) {
+            this.addTimeToThis(byId[id]);
+        }, this);
         
         let now = new Date();
         this.lastCall = now.getSeconds() + now.getMilliseconds() / 1000;

@@ -29,7 +29,6 @@ class Control extends Component {
     render() {
         const { state, tag, timeSlices } = this.props;
         const {toggleState, changeTag, appendSlice} = this.props.controlActions;
-        const { slices, lastDate } = timeSlices;
         
         
         let icon = state ? 'fa-pause' : 'fa-play' 
@@ -48,17 +47,12 @@ class Control extends Component {
                     </button>
                 </div>
                 <div className="controlEfficency">
-                    <EfficiencyLabel slices={slices} lastDate={lastDate} state={state} record={this.state.isRecording}/>   
+                    <EfficiencyLabel timeSlices={timeSlices} state={state} record={this.state.isRecording}/>   
                     <button onClick={() => this.setState({isRecording: !this.state.isRecording})}>{this.state.isRecording ? 'Pause record' : 'Continue record'}</button>                
                 </div>
             </div>
         )
     }
-}
-
-
-Control.propTypes = {
-    state: PropTypes.bool.isRequired
 }
 
 function mapStateToProps(state) {
@@ -77,3 +71,7 @@ function mapDispatchToProps(dispatch) {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Control)
+
+Control.propTypes = {
+    state: PropTypes.bool.isRequired
+}

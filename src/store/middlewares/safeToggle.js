@@ -1,19 +1,17 @@
-/*eslint-disable */
 import * as controlActions from '../../actions/ControlActions'
-import {TOGGLE_TWICE, TOGGLE_STATE} from '../../constants/Control'
+import {TOGGLE_STATE} from '../../constants/Control'
 import formatDate from '../../gist/formatDate'
 
 
 let lastToggleTag = '';
- const checkToggle = function({dispatch, getState}) {
+ const checkToggle = function({getState}) {
   return function (next) {
     return function (action) {
       if (action.type == TOGGLE_STATE) {
         if (getState().control.currentState && lastToggleTag != getState().control.currentTag) {
           let now = new Date();
-          let ids = getState().control.chuncks.allIds;
+          let ids = getState().control.tagHistory.allIds;
           let id = ids[ids.length-1];
-          let tmpTag =  lastToggleTag;
           lastToggleTag = getState().control.currentTag;
           return next (controlActions.toggleTwice(id, formatDate([now.getHours(), now.getMinutes(), now.getSeconds()], ':'), lastToggleTag));          
         }

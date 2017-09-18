@@ -6,6 +6,7 @@ export default class Timer extends Component {
     constructor(props) {
         super(props);
         this.anchorSecs = 0;
+        this.hasAlarmPlayed = false;
         this.state = {
             time: '00 : 00'
         }
@@ -26,6 +27,12 @@ export default class Timer extends Component {
     calculateTime() {
         let now = new Date();
         let difference = dateSecConverted([now.getHours(), now.getMinutes(), now.getSeconds()]) - this.anchorSecs;
+
+        if (!this.hasAlarmPlayed && this.props.alarm && !this.props.finish && difference > 900) {
+            let sound = new Audio('http://soundjax.com/reddo/67560^alarma.mp3');
+            sound.play();
+            this.hasAlarmPlayed = true;
+        }
 
         if (this.props.finish) difference = dateSecConverted(this.props.finish) - this.anchorSecs;
         if (Math.sign(difference) == -1) difference = 0;

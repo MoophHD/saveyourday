@@ -7,10 +7,9 @@ import {
 } from '../constants/Control'
 
 
-export function toggleState(id) {
+export function toggleState() {
     return {
-        type: TOGGLE_STATE,
-        id: id
+        type: TOGGLE_STATE
     }
 }
 

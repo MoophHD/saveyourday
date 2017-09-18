@@ -12,43 +12,44 @@ export default class Page extends Component {
   }
 
 	render() {
-      const {chuncks, timeSlices} = this.props; 
-      
-      const { allIds, byId } = chuncks;
-      const {slices, lastDate} = timeSlices
-      let listItems = [];
+      const {tagHistory, byId, allIds, lastDate} = this.props; 
+      let {allIds:tagIds, byId:tagById} = tagHistory; 
+      let localTagCounter = 0;
 
-      for (let i = 1, len = slices.length; i < len +1; i++) { // not rendering the 1st break
+      let listItems = allIds.map(function(id, ind, arr) {
         let startDate,
             finishDate,
-            toAppend,
-            state = !slices[i-1].state,
-            tag = byId[allIds[i-1]].tag;
-        if (i == len) {
+            slice = byId[id],
+            state = !slice.state
+        if (ind == arr.length - 1) {
           startDate = lastDate;
           finishDate = null;
           
         } else {
-          startDate = slices[i].start;
-          finishDate = slices[i].finish;
+          startDate = slice.start;
+          finishDate = slice.finish;
         }
 
         if (state) {
-          toAppend = <TimeRow 
-            key={i}
-            tag={tag}
+
+          return(
+            <TimeRow 
+            key={'row_'+id}
+            tag={tagById[tagIds[localTagCounter++]]}
             start={startDate}
             finish={finishDate}
             timer={<Timer cut={false} start={startDate} finish={finishDate}/>}
             />
+          )
         } else {
-          toAppend = <div className="breakTimer" key={'_breakID' + i}>
-                  <Timer cut={true} start={startDate} finish={finishDate}/>
-              </div>
-          }
+              return (<div className="breakTimer" key={'_breakID' + id}>
+                  <Timer cut={true} start={startDate} finish={finishDate} alarm={true}/>
+              </div>)
+        }
+      })
 
-          listItems.unshift(toAppend);
-      } 
+      listItems.reverse();
+
 
 
 
@@ -62,5 +63,5 @@ export default class Page extends Component {
 	}
 
 Page.propTypes = {
-	chuncks: PropTypes.object.isRequired
+  state: PropTypes.bool.isRequired
 }

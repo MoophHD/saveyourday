@@ -44,6 +44,10 @@ body {
   padding: 13px 0;
 }
 
+.tagLabel {
+  text-transform: uppercase;
+}
+
 .tagPanel {
   text-align: center;
   padding: 15px 0px;

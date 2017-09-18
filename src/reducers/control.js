@@ -1,3 +1,4 @@
+/* eslint-disable */
 import {
   TOGGLE_STATE,
   CHANGE_TAG,
@@ -5,6 +6,10 @@ import {
   TOGGLE_TWICE,
   RESET_STATE
 } from '../constants/Control'
+
+// import {
+//   EDIT_TAG
+// } from '../constants/ControlTable'
 import formatDate from '../gist/formatDate'
 
 let now = new Date();
@@ -14,48 +19,63 @@ const initialState = {
   currentState: false,
   timeSlices: {
     lastDate: formatDate([now.getHours(), now.getMinutes(), now.getSeconds()]),
-    slices: []
+    byId: {},
+    allIds: []
   },
-  chuncks: {
-    byId : {
-    },
-    allIds : []
-  }, 
+  tagHistory: {
+    byId: {},
+    allIds: []
+  },
   displayMode: 'LINE' // || GRAPH
 }
 
+let id;
 
 export default function control(state = initialState, action) {
-  let id;
   switch (action.type) {
+    // case EDIT_TAG:
+    //   return {...state, }
     case RESET_STATE:
-        return {...state, ...action.payload}
+        let cookies = action.payload;
+        return {...state, ...cookies, timeSlices: {lastDate:state.timeSlices.lastDate, byId:{...cookies.timeSlices.byId}, allIds:[...cookies.timeSlices.allIds]}}
     case TOGGLE_STATE:
-        id = action.id != undefined ? action.id : state.chuncks.allIds.length; 
-        return {...state,
-                 currentState: !state.currentState,
-                 chuncks: {allIds : [...state.chuncks.allIds, id],
-                           byId: {...state.chuncks.byId, [id]: {date: state.timeSlices.lastDate, tag:state.currentTag ? state.currentTag : 'None'}}}
-                }
+        if (!state.currentState) {
+          id = state.tagHistory.allIds.length > 0 ? parseInt( state.tagHistory.allIds[state.tagHistory.allIds.length - 1])+1: 0;     
+          return {...state,
+            currentState: !state.currentState,
+            tagHistory: {
+              byId: {...state.tagHistory.byId, [id]:state.currentTag ? state.currentTag : 'None'},
+              allIds: [...state.tagHistory.allIds, id]
+            }
+           }
+        } else {
+          return {...state, currentState: !state.currentState}
+        }
     case CHANGE_TAG:
         return {...state, currentTag: action.payload }
     case APPEND_SLICE:
-        console.log(state.timeSlices.lastDate);
-        let slices = [...state.timeSlices.slices, {state: state.currentState, start:state.timeSlices.lastDate, finish:action.payload}];    
-        return {...state, timeSlices: {lastDate:action.payload, slices:slices}}
+        id = state.timeSlices.allIds.length > 0 ? parseInt(state.timeSlices.allIds[state.timeSlices.allIds.length - 1])+1: 0;
+        let slices = {...state.timeSlices.byId, [id]:{state: state.currentState, start:state.timeSlices.lastDate, finish:action.payload}}
+        return {...state, timeSlices: {lastDate:action.payload, byId:slices, allIds:[...state.timeSlices.allIds, id]}}
     case TOGGLE_TWICE:
-        id = action.id != undefined ? action.id : state.chuncks.allIds.length;
+        id = state.tagHistory.allIds.length > 0 ? parseInt( state.tagHistory.allIds[state.tagHistory.allIds.length - 1])+1: 0;  
+        let sliceId = state.timeSlices.allIds.length > 0 ? parseInt(state.timeSlices.allIds[state.timeSlices.allIds.length - 1])+1: 0;
+        
+        console.log({byId: {...state.tagHistory.byId, [id]:action.previousTag ? action.previousTag : 'None', [++id]:state.currentTag}});
         return {
-                  ...state,
-                   currentState: state.currentState,
-                   chuncks: {allIds : [...state.chuncks.allIds, id, ++id],
-                             byId: {...state.chuncks.byId, [id]: {date: action.date, tag: action.previousTag ? action.previousTag : 'None'},
-                                                           [++id]: {date: action.date, tag: state.currentTag}                    
-                            }
-                          },
-                  timeSlices: {lastDate:action.date,
-                    slices: [...state.timeSlices.slices,   {state: false, start: action.date, finish: action.date}
-                                                        ]}   
+          ...state,
+            currentState: state.currentState,
+            tagHistory: {
+              byId: {...state.tagHistory.byId, [id]:state.currentTag},
+              allIds: [...state.tagHistory.allIds,[id]]
+            },
+            timeSlices: {lastDate:action.date,
+              allIds: [...state.timeSlices.allIds, sliceId],
+              byId: {
+                ...state.timeSlices.byId,
+                [sliceId]: {state: false, start:state.timeSlices.lastDate, finish:action.date}
+              }
+            }   
         }
     default:
       return state

@@ -1,4 +1,4 @@
-/* eslint-disable */
+
 import React, { Component } from 'react'
 import { bindActionCreators } from 'redux' 
 import { connect } from 'react-redux'
@@ -22,22 +22,26 @@ class App extends Component {
   }
 
   render() {
-    const {chuncks, state, timeSlices} = this.props; 
+    const {tagHistory, state, timeSlices} = this.props; 
+
+    let { byId, allIds, lastDate} = timeSlices;
     return (
     <div className="app">
       <button onClick={::this.deleteCookies}>Get rid of cookies</button>
       <Control />
       <Page
             state={state}
-            timeSlices={timeSlices}
-            chuncks={chuncks}/>
+            byId={byId}
+            allIds={allIds}
+            lastDate={lastDate}
+            tagHistory={tagHistory}/>
     </div>)
   }
 }
 
 function mapStateToProps(state) {
   return {
-    chuncks: state.control.chuncks,
+    tagHistory: state.control.tagHistory,
     state: state.control.currentState,
     timeSlices: state.control.timeSlices,
     tag: state.control.currentTag
