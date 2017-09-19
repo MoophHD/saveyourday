@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import Cookies from 'js-cookie'
 import Control from './Control'
 import Page from '../components/Page'
+import ControlTable from './ControlTable'
 import * as controlActions from '../actions/ControlActions'
 
 
@@ -27,10 +28,11 @@ class App extends Component {
     let { byId, allIds, lastDate} = timeSlices;
     return (
     <div className="app">
+      <ControlTable />
       <button onClick={::this.deleteCookies}>Get rid of cookies</button>
       <Control />
       <Page
-            state={state}
+            globalState={state}
             byId={byId}
             allIds={allIds}
             lastDate={lastDate}

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types' 
 import TimeRow from './TimeRow'
@@ -12,24 +13,35 @@ export default class Page extends Component {
   }
 
 	render() {
-      const {tagHistory, byId, allIds, lastDate} = this.props; 
+      const {tagHistory, byId, allIds, lastDate, globalState} = this.props; 
       let {allIds:tagIds, byId:tagById} = tagHistory; 
       let localTagCounter = 0;
 
-      let listItems = allIds.map(function(id, ind, arr) {
+      let trueIdList = allIds.concat('active');
+      trueIdList.shift();
+      console.log(trueIdList)
+      let listItems = trueIdList.map(function(id, ind) {
         let startDate,
             finishDate,
-            slice = byId[id],
-            state = !slice.state
-        if (ind == arr.length - 1) {
+            slice ,
+            state;
+        if (id == 'active') {
+        
           startDate = lastDate;
           finishDate = null;
-          
+          state = globalState;
         } else {
+          slice = byId[id];
+          state = slice.state;
           startDate = slice.start;
           finishDate = slice.finish;
         }
 
+        // console.log(`${startDate} : ${finishDate}`)
+        // console.log(slice);
+        
+
+        console.log(state);
         if (state) {
 
           return(
@@ -63,5 +75,5 @@ export default class Page extends Component {
 	}
 
 Page.propTypes = {
-  state: PropTypes.bool.isRequired
+  globalState: PropTypes.bool.isRequired
 }

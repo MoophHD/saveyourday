@@ -7,9 +7,9 @@ import {
   RESET_STATE
 } from '../constants/Control'
 
-// import {
-//   EDIT_TAG
-// } from '../constants/ControlTable'
+import {
+  REMOVE_TAG
+} from '../constants/ControlTable'
 import formatDate from '../gist/formatDate'
 
 let now = new Date();
@@ -33,8 +33,13 @@ let id;
 
 export default function control(state = initialState, action) {
   switch (action.type) {
-    // case EDIT_TAG:
-    //   return {...state, }
+    case REMOVE_TAG:
+      let {allIds:tagIds, byId:tagById} = state.tagHistory;
+
+      tagIds.splice(tagIds.indexOf(action.id), 1);
+      delete tagById[action.id];
+      
+      return {...state, tagHistory:{byId:tagById, allIds: tagIds}}
     case RESET_STATE:
         let cookies = action.payload;
         return {...state, ...cookies, timeSlices: {lastDate:state.timeSlices.lastDate, byId:{...cookies.timeSlices.byId}, allIds:[...cookies.timeSlices.allIds]}}
@@ -67,7 +72,7 @@ export default function control(state = initialState, action) {
             currentState: state.currentState,
             tagHistory: {
               byId: {...state.tagHistory.byId, [id]:state.currentTag},
-              allIds: [...state.tagHistory.allIds,[id]]
+              allIds: [...state.tagHistory.allIds, id]
             },
             timeSlices: {lastDate:action.date,
               allIds: [...state.timeSlices.allIds, sliceId],

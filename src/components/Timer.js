@@ -33,8 +33,13 @@ export default class Timer extends Component {
             sound.play();
             this.hasAlarmPlayed = true;
         }
+        
+        if (this.props.finish) {
+            difference = dateSecConverted(this.props.finish) - dateSecConverted(this.props.start);
+            clearInterval(this.id);
+        }
 
-        if (this.props.finish) difference = dateSecConverted(this.props.finish) - this.anchorSecs;
+        
         if (Math.sign(difference) == -1) difference = 0;
         let resultArr =  formatDate(dateSecConverted(difference).split(':')).split(':');
         if (resultArr[0] == '00' && this.props.cut) resultArr.shift();

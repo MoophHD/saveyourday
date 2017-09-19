@@ -1,7 +1,8 @@
 import {
     EDIT_TAG,
-    EDIT_SLICE
-} from '..constants/ControlTable'
+    EDIT_SLICE,
+    REMOVE_TAG
+} from '../constants/ControlTable'
 
 export function editTag(id, tag) {
     return {
@@ -18,5 +19,12 @@ export function editSlice(id, date, isStart) {
         id: id,
         payload: date,
         isStart: isStart
+    }
+}
+
+export function removeTag(id) {
+    return {
+        type: REMOVE_TAG,
+        id: id
     }
 }

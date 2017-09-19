@@ -4,15 +4,16 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux' 
 import * as actions from '../actions/ControlTableActions'
 
-class ControlTable extends Component() {
+class ControlTable extends Component {
     render() {
-        const {tagHistory} = this.props;
-        let {allIds:tagIds, byId:tagById} = tagHistory;         
-        
+        const {tagHistory, actions} = this.props;
+        let {allIds:tagIds, byId:tagById} = tagHistory;
+        let {removeTag} = actions;
+        tagIds.reverse();
         return(
         <div className="controlTable">
             <ul>
-                {tagHistory.tagIds.map((id) => <li>{tagById[id]}</li>)}
+                {tagIds.map((id) => <li key={'_' + id} id={id} onClick={(id) => removeTag(id)}>{tagById[id]}</li>)}
             </ul>
         </div>
         )
@@ -36,4 +37,4 @@ function mapDispatchToProps(dispatch) {
 }
   
 
-export default connect(mapStateToProps, mapDispatchToProps)(App)
+export default connect(mapStateToProps, mapDispatchToProps)(ControlTable)
