@@ -13,7 +13,7 @@ class ControlTable extends Component {
         return(
         <div className="controlTable">
             <ul>
-                {tagIds.map((id) => <li key={'_' + id} id={id} onClick={(id) => removeTag(id)}>{tagById[id]}</li>)}
+                {/* {tagIds.map((id) => <li key={'_' + id} id={id} onClick={(id) => removeTag(id)}>{tagById[id]}</li>)} */}
             </ul>
         </div>
         )
