@@ -19,7 +19,8 @@ export default class Page extends Component {
 
       let trueIdList = allIds.concat('active');
       trueIdList.shift();
-      console.log(trueIdList)
+      //console.log(trueIdList)
+      
       let listItems = trueIdList.map(function(id, ind) {
         let startDate,
             finishDate,
@@ -37,11 +38,8 @@ export default class Page extends Component {
           finishDate = slice.finish;
         }
 
-        // console.log(`${startDate} : ${finishDate}`)
-        // console.log(slice);
         
 
-        console.log(state);
         if (state) {
 
           return(
@@ -61,9 +59,6 @@ export default class Page extends Component {
       })
 
       listItems.reverse();
-
-
-
 
       return(
           <div className="page">

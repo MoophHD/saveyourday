@@ -45,7 +45,8 @@ export default function control(state = initialState, action) {
         return {...state, ...cookies, timeSlices: {lastDate:state.timeSlices.lastDate, byId:{...cookies.timeSlices.byId}, allIds:[...cookies.timeSlices.allIds]}}
     case TOGGLE_STATE:
         if (!state.currentState) {
-          id = state.tagHistory.allIds.length > 0 ? parseInt( state.tagHistory.allIds[state.tagHistory.allIds.length - 1])+1: 0;     
+          id = state.tagHistory.allIds.length > 0 ? parseInt( state.tagHistory.allIds[state.tagHistory.allIds.length - 1])+1: 0; 
+          console.log(id);    
           return {...state,
             currentState: !state.currentState,
             tagHistory: {
@@ -66,7 +67,6 @@ export default function control(state = initialState, action) {
         id = state.tagHistory.allIds.length > 0 ? parseInt( state.tagHistory.allIds[state.tagHistory.allIds.length - 1])+1: 0;  
         let sliceId = state.timeSlices.allIds.length > 0 ? parseInt(state.timeSlices.allIds[state.timeSlices.allIds.length - 1])+1: 0;
         
-        console.log({byId: {...state.tagHistory.byId, [id]:action.previousTag ? action.previousTag : 'None', [++id]:state.currentTag}});
         return {
           ...state,
             currentState: state.currentState,
