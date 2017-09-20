@@ -8,7 +8,9 @@ import {
 } from '../constants/Control'
 
 import {
-  REMOVE_TAG
+  REMOVE_TAG,
+  REMOVE_SLICE,
+  EDIT_TAG
 } from '../constants/ControlTable'
 import formatDate from '../gist/formatDate'
 
@@ -29,24 +31,36 @@ const initialState = {
   displayMode: 'LINE' // || GRAPH
 }
 
-let id;
+let id,tagById,tagIds;
 
 export default function control(state = initialState, action) {
   switch (action.type) {
-    case REMOVE_TAG:
-      let {allIds:tagIds, byId:tagById} = state.tagHistory;
+    case REMOVE_SLICE:
+      //let {allIds:tagIds, byId:tagById} = state.tagHistory;
+      return {...state}
+    case EDIT_TAG:
+      tagIds = state.tagHistory.allIds;
+      tagById = state.tagHistory.byId;
 
-      tagIds.splice(tagIds.indexOf(action.id), 1);
-      delete tagById[action.id];
+      tagById[action.id] = action.payload;
+
+      return {...state, tagHistory:{byId:tagById, allIds: tagIds}}
+    case REMOVE_TAG:
+      tagIds = state.tagHistory.allIds;
+      tagById = state.tagHistory.byId;
+
+      // delete tagById[deletedTagId];
+      tagById[action.id] = 'None';
+      
       
       return {...state, tagHistory:{byId:tagById, allIds: tagIds}}
+
     case RESET_STATE:
         let cookies = action.payload;
         return {...state, ...cookies, timeSlices: {lastDate:state.timeSlices.lastDate, byId:{...cookies.timeSlices.byId}, allIds:[...cookies.timeSlices.allIds]}}
     case TOGGLE_STATE:
         if (!state.currentState) {
-          id = state.tagHistory.allIds.length > 0 ? parseInt( state.tagHistory.allIds[state.tagHistory.allIds.length - 1])+1: 0; 
-          console.log(id);    
+          id = state.timeSlices.allIds.length > 0 ? parseInt(state.timeSlices.allIds[state.timeSlices.allIds.length - 1])+1: 0;
           return {...state,
             currentState: !state.currentState,
             tagHistory: {
@@ -64,8 +78,8 @@ export default function control(state = initialState, action) {
         let slices = {...state.timeSlices.byId, [id]:{state: state.currentState, start:state.timeSlices.lastDate, finish:action.payload}}
         return {...state, timeSlices: {lastDate:action.payload, byId:slices, allIds:[...state.timeSlices.allIds, id]}}
     case TOGGLE_TWICE:
-        id = state.tagHistory.allIds.length > 0 ? parseInt( state.tagHistory.allIds[state.tagHistory.allIds.length - 1])+1: 0;  
-        let sliceId = state.timeSlices.allIds.length > 0 ? parseInt(state.timeSlices.allIds[state.timeSlices.allIds.length - 1])+1: 0;
+        id = state.timeSlices.allIds.length > 0 ? parseInt(state.timeSlices.allIds[state.timeSlices.allIds.length - 1])+1: 0;
+        let sliceId = state.timeSlices.allIds.length > 0 ? parseInt(state.timeSlices.allIds[state.timeSlices.allIds.length - 1])+2: 0;
         
         return {
           ...state,

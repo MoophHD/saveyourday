@@ -10,7 +10,12 @@ import * as controlActions from '../actions/ControlActions'
 
 
 class App extends Component {
-
+  constructor(props) {
+    super(props);
+    this.state = {
+      isTableExpanded: false
+    }
+  }
 
   componentDidMount() {
     if (Cookies.get('state')) {
@@ -22,16 +27,24 @@ class App extends Component {
     Cookies.remove('state');
   }
 
+  toggleTable() {
+    this.setState((prevState, props)=> { // eslint-disable-line
+      return {isTableExpanded: !prevState.isTableExpanded}
+    })
+  }
+
   render() {
-    const {tagHistory, state, timeSlices} = this.props; 
+    const {tagHistory, state, timeSlices, tag} = this.props; 
 
     let { byId, allIds, lastDate} = timeSlices;
     return (
     <div className="app">
-      <ControlTable />
       <button onClick={::this.deleteCookies}>Get rid of cookies</button>
+      <button onClick={::this.toggleTable}>ToggleTable</button>
+      { this.state.isTableExpanded ? <ControlTable /> : null }
       <Control />
       <Page
+            activeTag={tag}
             globalState={state}
             byId={byId}
             allIds={allIds}
@@ -52,7 +65,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    controlActions: bindActionCreators(controlActions, dispatch)  // eslint-disable-line
+    controlActions: bindActionCreators(controlActions, dispatch) // eslint-disable-line
   }
 }
 

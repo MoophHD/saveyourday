@@ -1,10 +1,13 @@
-/* eslint-disable */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types' 
 import TimeRow from './TimeRow'
 import Timer from './Timer'
+import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux' 
+import * as actions from '../actions/ControlTableActions'
 
-export default class Page extends Component {
+
+class Page extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -13,25 +16,28 @@ export default class Page extends Component {
   }
 
 	render() {
-      const {tagHistory, byId, allIds, lastDate, globalState} = this.props; 
-      let {allIds:tagIds, byId:tagById} = tagHistory; 
-      let localTagCounter = 0;
+      const {tagHistory, byId, allIds, lastDate, globalState, activeTag, actions} = this.props; 
+      let { byId:tagById} = tagHistory; 
+
+      const {editTag} = actions;
 
       let trueIdList = allIds.concat('active');
       trueIdList.shift();
-      //console.log(trueIdList)
       
-      let listItems = trueIdList.map(function(id, ind) {
+      let listItems = trueIdList.map(function(id) {
         let startDate,
             finishDate,
             slice ,
-            state;
+            state,
+            tag;
         if (id == 'active') {
-        
+          tag = activeTag;
           startDate = lastDate;
           finishDate = null;
           state = globalState;
         } else {
+
+          tag = tagById[id] ? tagById[id] : '';
           slice = byId[id];
           state = slice.state;
           startDate = slice.start;
@@ -41,11 +47,11 @@ export default class Page extends Component {
         
 
         if (state) {
-
           return(
             <TimeRow 
+            onTagChange={() => editTag}
             key={'row_'+id}
-            tag={tagById[tagIds[localTagCounter++]]}
+            tag={tag}
             start={startDate}
             finish={finishDate}
             timer={<Timer cut={false} start={startDate} finish={finishDate}/>}
@@ -72,3 +78,17 @@ export default class Page extends Component {
 Page.propTypes = {
   globalState: PropTypes.bool.isRequired
 }
+
+function mapStateToProps(state) {  // eslint-disable-line
+  return {
+  }
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    actions: bindActionCreators(actions, dispatch) // eslint-disable-line
+  }
+}
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(Page)

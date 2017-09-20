@@ -14,7 +14,7 @@ class ControlTable extends Component {
         return(
         <div className="controlTable">
             <ul>
-                {toRenderTags.map((id) => <li key={'_' + id} id={id} onClick={(id) => removeTag(id)}>{tagById[id]}</li>)}
+                {toRenderTags.map((id) => <li key={'_' + id} id={id} onClick={removeTag.bind(null, id)}>{tagById[id]}</li>)}
             </ul>
         </div>
         )

@@ -118,3 +118,7 @@ body {
   grid-template-columns: 30% 40% 30%;
   padding: 35px 100px;
 }
+
+.controlTable {
+  transition: all ease-in-out 0.3s;
+}

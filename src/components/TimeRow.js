@@ -2,9 +2,34 @@
 import React, {Component} from 'react'
 import formatDate from '../gist/formatDate' 
 import dateSecConverter from '../gist/dateSecConverter'
-/*eslint-enable */
+
 
 export default class TimeRow extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isWorkMode: true
+        }
+    }
+
+    changeListener(e) {
+
+    }
+
+    setChangeHandler(elem) {
+        
+    }
+
+    handleModeChange() {
+        this.setState((prevState, props) => {
+            return { isWorkMode: !prevState.isWorkMode}
+        })
+    }
+
+    handleTagLabelClick(e) {
+        e.target.innerHTML = '123';
+    }
+
     render() {
         const {start, finish, timer, tag} = this.props;
         let timeDisplay = finish ? formatDate(dateSecConverter(dateSecConverter(finish) - dateSecConverter(start)).split(':'), ' : ') : timer;
@@ -18,21 +43,21 @@ export default class TimeRow extends Component {
             formattedFinish = finish.split(':');
             formattedFinish.pop();
             formattedFinish = formattedFinish.join(' : ');}
-        return(
-            <div className="timeRow">
-                <div className="tagLabel">{tag ? tag : 'None'}</div>
-                <div className="workTime">
-                    {timeDisplay}
-                </div>
-                <div className="startChunck">
-                    <div>Start</div>
-                    <div>{formattedStart}</div>
-                </div>
-                <div className="finishChunck">
-                    <div>Finish</div>
-                    <div>{formattedFinish}</div>
-                </div>
+        return( //contentEditable={true} 
+        <div className="timeRow" onClick={::this.handleModeChange}>
+        <div className="tagLabel" >{tag ? tag : 'None'}</div> 
+            <div className="workTime">
+                {timeDisplay}
             </div>
+            <div className="startChunck">
+                <div>Start</div>
+                <div>{formattedStart}</div>
+            </div>
+            <div className="finishChunck">
+                <div>Finish</div>
+                <div>{formattedFinish}</div>
+            </div>
+        </div>
         )
     }
 }
