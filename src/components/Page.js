@@ -16,13 +16,14 @@ class Page extends Component {
   }
 
 	render() {
-      const {tagHistory, byId, allIds, lastDate, globalState, activeTag, actions} = this.props; 
-      let { byId:tagById} = tagHistory; 
+      const {tagHistory, byId, allIds, lastDate, globalState, actions} = this.props; 
+      let { byId:tagById, allIds: tagIds} = tagHistory; 
 
       const {editTag} = actions;
 
       let trueIdList = allIds.concat('active');
       trueIdList.shift();
+
       
       let listItems = trueIdList.map(function(id) {
         let startDate,
@@ -31,12 +32,11 @@ class Page extends Component {
             state,
             tag;
         if (id == 'active') {
-          tag = activeTag;
+          tag = tagById[tagIds[tagIds.length - 1]];
           startDate = lastDate;
           finishDate = null;
           state = globalState;
         } else {
-
           tag = tagById[id] ? tagById[id] : '';
           slice = byId[id];
           state = slice.state;
@@ -47,9 +47,11 @@ class Page extends Component {
         
 
         if (state) {
+          console.log(tag);
           return(
             <TimeRow 
-            onTagChange={() => editTag}
+            onTagChange={(id, value) => editTag(id, value)}
+            id={id}
             key={'row_'+id}
             tag={tag}
             start={startDate}

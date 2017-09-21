@@ -8,8 +8,14 @@ export default class TimeRow extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            isWorkMode: true
+            isWorkMode: true,
+            tagValue: ''
         }
+    }
+
+    componentDidMount() {
+        this.setState({tagValue: this.props.tag ? this.props.tag : 'None'});
+
     }
 
     changeListener(e) {
@@ -27,8 +33,33 @@ export default class TimeRow extends Component {
     }
 
     handleTagLabelClick(e) {
-        e.target.innerHTML = '123';
+        let elem = e.target;
+        elem.contentEditable = "true";
+
+        this.lastElem = elem;
+        this.setSubmitListener(elem, 'tagValue');
     }
+
+    setSubmitListener(target) {
+        window.addEventListener("keydown", (e) => this.submitListener(e, target));
+    }
+
+    submitListener(e, target) {
+        if (e.keyCode == 13) {
+            e.preventDefault();        
+            this.setState({
+                [target] : this.lastElem.innerHTML
+            })
+            this.removeSubmitListener();
+            this.props.onTagChange(this.props.id, this.lastElem.innerHTML);        
+        }
+    }
+
+    removeSubmitListener() {
+        this.lastElem.removeEventListener("keydown", () => this.submitListener());
+        this.lastElem.contentEditable = "false";
+    }
+
 
     render() {
         const {start, finish, timer, tag} = this.props;
@@ -45,7 +76,7 @@ export default class TimeRow extends Component {
             formattedFinish = formattedFinish.join(' : ');}
         return( //contentEditable={true} 
         <div className="timeRow" onClick={::this.handleModeChange}>
-        <div className="tagLabel" >{tag ? tag : 'None'}</div> 
+            <div className="tagLabel" onClick={::this.handleTagLabelClick}>{tag ? tag : 'None'}</div> 
             <div className="workTime">
                 {timeDisplay}
             </div>

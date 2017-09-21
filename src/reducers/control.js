@@ -79,20 +79,19 @@ export default function control(state = initialState, action) {
         return {...state, timeSlices: {lastDate:action.payload, byId:slices, allIds:[...state.timeSlices.allIds, id]}}
     case TOGGLE_TWICE:
         id = state.timeSlices.allIds.length > 0 ? parseInt(state.timeSlices.allIds[state.timeSlices.allIds.length - 1])+1: 0;
-        let sliceId = state.timeSlices.allIds.length > 0 ? parseInt(state.timeSlices.allIds[state.timeSlices.allIds.length - 1])+2: 0;
         
         return {
           ...state,
             currentState: state.currentState,
             tagHistory: {
-              byId: {...state.tagHistory.byId, [id]:state.currentTag},
-              allIds: [...state.tagHistory.allIds, id]
+              byId: {...state.tagHistory.byId, [id+1]:state.currentTag},
+              allIds: [...state.tagHistory.allIds, id+1]
             },
             timeSlices: {lastDate:action.date,
-              allIds: [...state.timeSlices.allIds, sliceId],
+              allIds: [...state.timeSlices.allIds, id],
               byId: {
                 ...state.timeSlices.byId,
-                [sliceId]: {state: false, start:state.timeSlices.lastDate, finish:action.date}
+                [id]: {state: false, start:state.timeSlices.lastDate, finish:action.date}
               }
             }   
         }
