@@ -7,86 +7,124 @@ import dateSecConverter from '../gist/dateSecConverter'
 export default class TimeRow extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            isWorkMode: true,
-            tagValue: ''
-        }
+        this.windowEnterListener = this.windowEnterListener.bind(this);        
     }
 
     componentDidMount() {
-        this.setState({tagValue: this.props.tag ? this.props.tag : 'None'});
 
     }
 
-    changeListener(e) {
-
-    }
-
-    setChangeHandler(elem) {
-        
-    }
-
-    handleModeChange() {
-        this.setState((prevState, props) => {
-            return { isWorkMode: !prevState.isWorkMode}
-        })
+    setEditable(elem) {
+        elem.contentEditable = true;
+        elem.focus();
     }
 
     handleTagLabelClick(e) {
         let elem = e.target;
-        elem.contentEditable = "true";
+        if (elem.contentEditable == "true") return;
 
-        this.lastElem = elem;
-        this.setSubmitListener(elem, 'tagValue');
+        this.setEditable(elem);
+
+        this.currTarget = 'tag';
+        this.setSubmitListener(elem);
     }
 
-    setSubmitListener(target) {
-        window.addEventListener("keydown", (e) => this.submitListener(e, target));
+    handleStartChunckClick(e) {
+        let elem = e.target;
+        if (elem.contentEditable == "true") return;
+
+        elem.innerHTML = this.props.start;
+        this.setEditable(elem);   
+
+        this.currTarget = 'startChunck';
+        this.setSubmitListener(elem);
+    }
+
+    handleFinishChunckClick(e) {
+
+        let elem = e.target;
+        if (elem.contentEditable == "true") return;
+
+        elem.innerHTML = this.props.start;
+        this.setEditable(elem); 
+
+        this.currTarget = 'finishChunck';
+        this.setSubmitListener(elem);
+    }
+
+    setSubmitListener(elem) {
+        window.addEventListener("keydown", this.windowEnterListener);
     }
 
     submitListener(e, target) {
         if (e.keyCode == 13) {
             e.preventDefault();        
-            this.setState({
-                [target] : this.lastElem.innerHTML
-            })
-            this.removeSubmitListener();
-            this.props.onTagChange(this.props.id, this.lastElem.innerHTML);        
+            switch (target) {
+                case 'tag':
+                    if (e.target.innerHTML === this.props.tag) break;
+
+                    this.props.onTagChange(this.props.id, e.target.innerHTML);
+                    break;
+                case 'startChunck':
+                    if (e.target.innerHTML === this.props.start) break;
+                
+                    this.props.onSliceChange(this.props.id, e.target.innerHTML, true);
+                    break;
+                case 'finishChunck':
+                    if (e.target.innerHTML === this.props.finish) break;
+                
+                    this.props.onSliceChange(this.props.id, e.target.innerHTML, false);
+                    break;
+                default:
+                    break
+            }     
+            this.removeSubmitListener(e.target, this.currTarget);            
         }
     }
 
-    removeSubmitListener() {
-        this.lastElem.removeEventListener("keydown", () => this.submitListener());
-        this.lastElem.contentEditable = "false";
+    removeSubmitListener(elem, stateTarget) {
+        window.removeEventListener("keydown", this.windowEnterListener);
+        elem.contentEditable = "false";
+        console.log(stateTarget);
+        if (stateTarget == 'startChunck' || stateTarget == 'finishChunck') {
+            console.log('1');
+            elem.innerHTML = this.localFormatDate(elem.innerHTML);
+        }
+    }
+
+    localFormatDate(d) {
+        let formatted = d.split(':');
+        formatted.pop();
+        return formatted.join(' : ');
+    }
+
+    windowEnterListener(e) {
+        this.submitListener(e, this.currTarget)
     }
 
 
     render() {
         const {start, finish, timer, tag} = this.props;
+        let localFormatDate = this.localFormatDate;
         let timeDisplay = finish ? formatDate(dateSecConverter(dateSecConverter(finish) - dateSecConverter(start)).split(':'), ' : ') : timer;
 
-        let formattedStart = start.split(':');
-        formattedStart.pop();
-        formattedStart = formattedStart.join(' : ');
+        let formattedStart = localFormatDate(start);
 
         let formattedFinish = null;
-        if (finish){
-            formattedFinish = finish.split(':');
-            formattedFinish.pop();
-            formattedFinish = formattedFinish.join(' : ');}
-        return( //contentEditable={true} 
-        <div className="timeRow" onClick={::this.handleModeChange}>
+        if (finish) formattedFinish = localFormatDate(finish);
+        return( 
+        <div className="timeRow">
             <div className="tagLabel" onClick={::this.handleTagLabelClick}>{tag ? tag : 'None'}</div> 
             <div className="workTime">
                 {timeDisplay}
             </div>
             <div className="startChunck">
                 <div>Start</div>
-                <div>{formattedStart}</div>
-            </div>
+                <div onClick={::this.handleStartChunckClick}>{formattedStart}</div>
+            </div>  
             <div className="finishChunck">
                 <div>Finish</div>
-                <div>{formattedFinish}</div>
+                <div onClick={::this.handleFinishChunckClick}>{formattedFinish}</div>
             </div>
         </div>
         )

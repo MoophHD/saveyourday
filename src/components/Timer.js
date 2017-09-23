@@ -28,9 +28,16 @@ export default class Timer extends Component {
         let now = new Date();
         let difference = dateSecConverted([now.getHours(), now.getMinutes(), now.getSeconds()]) - this.anchorSecs;
 
-        if (!this.hasAlarmPlayed && this.props.alarm && !this.props.finish && difference > 900) {
+        if (!this.hasAlarmPlayed && this.props.alarm && !this.props.finish && difference > 600) {
             let sound = new Audio('http://soundjax.com/reddo/67560^alarma.mp3');
+            sound.volume = .5;
+            sound.addEventListener('ended',function(){
+                this.pause();
+                this.currentTime=0;
+            });
+
             sound.play();
+            
             this.hasAlarmPlayed = true;
         }
         

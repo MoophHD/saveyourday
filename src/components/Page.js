@@ -19,7 +19,7 @@ class Page extends Component {
       const {tagHistory, byId, allIds, lastDate, globalState, actions} = this.props; 
       let { byId:tagById, allIds: tagIds} = tagHistory; 
 
-      const {editTag} = actions;
+      const {editTag, editSlice} = actions;
 
       let trueIdList = allIds.concat('active');
       trueIdList.shift();
@@ -47,9 +47,9 @@ class Page extends Component {
         
 
         if (state) {
-          console.log(tag);
           return(
             <TimeRow 
+            onSliceChange={(id, date, isStart) => editSlice(id, date, isStart)}
             onTagChange={(id, value) => editTag(id, value)}
             id={id}
             key={'row_'+id}

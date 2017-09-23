@@ -10,7 +10,8 @@ import {
 import {
   REMOVE_TAG,
   REMOVE_SLICE,
-  EDIT_TAG
+  EDIT_TAG,
+  EDIT_SLICE
 } from '../constants/ControlTable'
 import formatDate from '../gist/formatDate'
 
@@ -31,12 +32,21 @@ const initialState = {
   displayMode: 'LINE' // || GRAPH
 }
 
-let id,tagById,tagIds;
+let id,tagById,tagIds, sliceById, sliceIds, date, sliceState;
 
 export default function control(state = initialState, action) {
   switch (action.type) {
+    case EDIT_SLICE:
+      sliceById = Object.assign({}, state.timeSlices.byId);
+      sliceIds = state.timeSlices.allIds.slice();
+
+      id = action.id;
+      date = action.payload;
+      sliceState = action.isStart ? 'start' : 'finish';  
+      
+      sliceById[sliceIds[id]][sliceState] = date;
+      return {...state, timeSlices: {lastDate: state.timeSlices.lastDate, byId: sliceById, allIds: sliceIds}}
     case REMOVE_SLICE:
-      //let {allIds:tagIds, byId:tagById} = state.tagHistory;
       return {...state}
     case EDIT_TAG:
       tagIds = state.tagHistory.allIds;
