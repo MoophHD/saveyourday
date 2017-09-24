@@ -7,7 +7,8 @@ import dateSecConverter from '../gist/dateSecConverter'
 export default class TimeRow extends Component {
     constructor(props) {
         super(props);
-        this.windowEnterListener = this.windowEnterListener.bind(this);        
+        this.windowEnterListener = this.windowEnterListener.bind(this); 
+        this.windowClickListener = this.windowClickListener.bind(this);       
     }
 
     componentDidMount() {
@@ -26,6 +27,7 @@ export default class TimeRow extends Component {
         this.setEditable(elem);
 
         this.currTarget = 'tag';
+        this.elem = elem;
         this.setSubmitListener(elem);
     }
 
@@ -37,6 +39,7 @@ export default class TimeRow extends Component {
         this.setEditable(elem);   
 
         this.currTarget = 'startChunck';
+        this.elem = elem;
         this.setSubmitListener(elem);
     }
 
@@ -49,59 +52,68 @@ export default class TimeRow extends Component {
         this.setEditable(elem); 
 
         this.currTarget = 'finishChunck';
+        this.elem = elem;
         this.setSubmitListener(elem);
     }
 
     setSubmitListener(elem) {
         window.addEventListener("keydown", this.windowEnterListener);
+        window.addEventListener("click", this.windowClickListener);
     }
 
-    submitListener(e, target) {
+    windowEnterListener(e) {
         if (e.keyCode == 13) {
-            e.preventDefault();        
-            switch (target) {
-                case 'tag':
-                    if (e.target.innerHTML === this.props.tag) break;
-
-                    this.props.onTagChange(this.props.id, e.target.innerHTML);
-                    break;
-                case 'startChunck':
-                    if (e.target.innerHTML === this.props.start) break;
-                
-                    this.props.onSliceChange(this.props.id, e.target.innerHTML, true);
-                    break;
-                case 'finishChunck':
-                    if (e.target.innerHTML === this.props.finish) break;
-                
-                    this.props.onSliceChange(this.props.id, e.target.innerHTML, false);
-                    break;
-                default:
-                    break
-            }     
-            this.removeSubmitListener(e.target, this.currTarget);            
+            e.preventDefault();                
+            this.callSubmit(this.elem);
         }
     }
 
-    removeSubmitListener(elem, stateTarget) {
+    windowClickListener(e) {
+        if (e.target.contentEditable == "true") {
+            return;
+        }
+        
+        this.callSubmit(this.elem);
+    }
+
+    removeSubmitListener(elem) {
         window.removeEventListener("keydown", this.windowEnterListener);
+        window.removeEventListener("click", this.windowClickListener);
         elem.contentEditable = "false";
-        console.log(stateTarget);
+        let stateTarget = this.currTarget;
         if (stateTarget == 'startChunck' || stateTarget == 'finishChunck') {
-            console.log('1');
             elem.innerHTML = this.localFormatDate(elem.innerHTML);
         }
     }
 
+    callSubmit(elem) {
+        switch (this.currTarget) {
+            case 'tag':
+                if (elem.innerHTML === this.props.tag) break;
+
+                this.props.onTagChange(this.props.id, elem.innerHTML);
+                break;
+            case 'startChunck':
+                if (elem.innerHTML === this.props.start) break;
+            
+                this.props.onSliceChange(this.props.id, elem.innerHTML, true);
+                break;
+            case 'finishChunck':
+                if (elem.innerHTML === this.props.finish) break;
+            
+                this.props.onSliceChange(this.props.id, elem.innerHTML, false);
+                break;
+            default:
+                break
+        }     
+        this.removeSubmitListener(elem, this.currTarget);   
+    }
+
     localFormatDate(d) {
         let formatted = d.split(':');
-        formatted.pop();
+        if (formatted.length > 2) formatted.pop();
         return formatted.join(' : ');
     }
-
-    windowEnterListener(e) {
-        this.submitListener(e, this.currTarget)
-    }
-
 
     render() {
         const {start, finish, timer, tag} = this.props;
@@ -109,7 +121,7 @@ export default class TimeRow extends Component {
         let timeDisplay = finish ? formatDate(dateSecConverter(dateSecConverter(finish) - dateSecConverter(start)).split(':'), ' : ') : timer;
 
         let formattedStart = localFormatDate(start);
-
+        
         let formattedFinish = null;
         if (finish) formattedFinish = localFormatDate(finish);
         return( 

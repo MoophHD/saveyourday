@@ -4,8 +4,9 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import Cookies from 'js-cookie'
 import Control from './Control'
-import Page from '../components/Page'
+import Page from './Page'
 import ControlTable from './ControlTable'
+import Notepad from '../components/Notepad'
 import * as controlActions from '../actions/ControlActions'
 
 
@@ -21,8 +22,15 @@ class App extends Component {
     if (Cookies.get('state')) {
       this.props.controlActions.resetState(JSON.parse(Cookies.get('state')));
     }
+    window.addEventListener('beforeunload', () => this.handleUnload())
   }
+  
+  handleUnload() {
+    //let cookies = JSON.parse(Cookies.get('state'));
 
+    
+  }
+  
   deleteCookies() {
     Cookies.remove('state');
   }
@@ -43,13 +51,17 @@ class App extends Component {
       <button onClick={::this.toggleTable}>ToggleTable</button>
       { this.state.isTableExpanded ? <ControlTable /> : null }
       <Control />
-      <Page
-            activeTag={tag}
-            globalState={state}
-            byId={byId}
-            allIds={allIds}
-            lastDate={lastDate}
-            tagHistory={tagHistory}/>
+      <div className="mainView">
+        <Notepad />
+        <div className="viewResizer"></div>
+        <Page
+              activeTag={tag}
+              globalState={state}
+              byId={byId}
+              allIds={allIds}
+              lastDate={lastDate}
+              tagHistory={tagHistory}/>
+      </div>
     </div>)
   }
 }

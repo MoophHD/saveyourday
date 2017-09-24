@@ -1,28 +1,35 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types' 
-import TimeRow from './TimeRow'
-import Timer from './Timer'
+import TimeRow from '../components/TimeRow'
+import Timer from '../components/Timer'
 import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux' 
+import { bindActionCreators } from 'redux'
+import Cookies from 'js-cookie'
 import * as actions from '../actions/ControlTableActions'
 
 
 class Page extends Component {
 	constructor(props) {
 		super(props);
-		this.state = {
-			workTime: 0
-		}
+  }
+
+  componentWillMount() {
+    this.clear = Cookies.get('state') ? false : true;
+    (`mount, ${this.clear}`);
   }
 
 	render() {
-      const {tagHistory, byId, allIds, lastDate, globalState, actions} = this.props; 
+      const {tagHistory, timeSlices, globalState, actions} = this.props; 
       let { byId:tagById, allIds: tagIds} = tagHistory; 
-
+      let {allIds, byId, lastDate} = timeSlices
       const {editTag, editSlice} = actions;
 
       let trueIdList = allIds.concat('active');
-      trueIdList.shift();
+      if (this.clear) {
+        trueIdList.shift();
+      } else {
+        this.clear = true;
+      }
 
       
       let listItems = trueIdList.map(function(id) {
@@ -52,11 +59,11 @@ class Page extends Component {
             onSliceChange={(id, date, isStart) => editSlice(id, date, isStart)}
             onTagChange={(id, value) => editTag(id, value)}
             id={id}
-            key={'row_'+id}
+            key={'row_'+id + startDate}
             tag={tag}
             start={startDate}
             finish={finishDate}
-            timer={<Timer cut={false} start={startDate} finish={finishDate}/>}
+            timer={<Timer cut={false} start={startDate} finish={null}/>}
             />
           )
         } else {
@@ -83,6 +90,7 @@ Page.propTypes = {
 
 function mapStateToProps(state) {  // eslint-disable-line
   return {
+    timeSlices: state.control.timeSlices
   }
 }
 

@@ -11,7 +11,8 @@ import {
   REMOVE_TAG,
   REMOVE_SLICE,
   EDIT_TAG,
-  EDIT_SLICE
+  EDIT_SLICE,
+  APPEND_CUSTOM_SLICE
 } from '../constants/ControlTable'
 import formatDate from '../gist/formatDate'
 
@@ -32,10 +33,16 @@ const initialState = {
   displayMode: 'LINE' // || GRAPH
 }
 
-let id,tagById,tagIds, sliceById, sliceIds, date, sliceState;
+let id,tagById,tagIds, sliceById, sliceIds, date, sliceState, slices;
 
 export default function control(state = initialState, action) {
   switch (action.type) {
+    case APPEND_CUSTOM_SLICE:
+      id = action.id ? action.id : getID(state);
+
+      slicesById = {...state.timeSlices.byId, [id]:{state: action.state, start:action.start, finish:action.finish}}
+      sliceIds = [...state.timeSlices.sliceIds, [id]].sort((a,b) => a - b);
+      return {...state, timeSlices: {lastDate: action.finish, byId: sliceById, allIds: sliceIds}}      
     case EDIT_SLICE:
       sliceById = Object.assign({}, state.timeSlices.byId);
       sliceIds = state.timeSlices.allIds.slice();
@@ -59,10 +66,8 @@ export default function control(state = initialState, action) {
       tagIds = state.tagHistory.allIds;
       tagById = state.tagHistory.byId;
 
-      // delete tagById[deletedTagId];
       tagById[action.id] = 'None';
-      
-      
+
       return {...state, tagHistory:{byId:tagById, allIds: tagIds}}
 
     case RESET_STATE:
@@ -70,7 +75,7 @@ export default function control(state = initialState, action) {
         return {...state, ...cookies, timeSlices: {lastDate:state.timeSlices.lastDate, byId:{...cookies.timeSlices.byId}, allIds:[...cookies.timeSlices.allIds]}}
     case TOGGLE_STATE:
         if (!state.currentState) {
-          id = state.timeSlices.allIds.length > 0 ? parseInt(state.timeSlices.allIds[state.timeSlices.allIds.length - 1])+1: 0;
+          id = getID(state);
           return {...state,
             currentState: !state.currentState,
             tagHistory: {
@@ -84,11 +89,11 @@ export default function control(state = initialState, action) {
     case CHANGE_TAG:
         return {...state, currentTag: action.payload }
     case APPEND_SLICE:
-        id = state.timeSlices.allIds.length > 0 ? parseInt(state.timeSlices.allIds[state.timeSlices.allIds.length - 1])+1: 0;
-        let slices = {...state.timeSlices.byId, [id]:{state: state.currentState, start:state.timeSlices.lastDate, finish:action.payload}}
+        id = getID(state);
+        slices = {...state.timeSlices.byId, [id]:{state: state.currentState, start:state.timeSlices.lastDate, finish:action.payload}}
         return {...state, timeSlices: {lastDate:action.payload, byId:slices, allIds:[...state.timeSlices.allIds, id]}}
     case TOGGLE_TWICE:
-        id = state.timeSlices.allIds.length > 0 ? parseInt(state.timeSlices.allIds[state.timeSlices.allIds.length - 1])+1: 0;
+        id = getID(state);
         
         return {
           ...state,
@@ -108,4 +113,8 @@ export default function control(state = initialState, action) {
     default:
       return state
   }
+}
+
+function getID(state) {
+  return state.timeSlices.allIds.length > 0 ? parseInt(state.timeSlices.allIds[state.timeSlices.allIds.length - 1])+1: 0;
 }

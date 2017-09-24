@@ -1,10 +1,11 @@
-/* eslint-disable */
 import React, {Component} from 'react'
 import dateSecConverter from '../gist/dateSecConverter'
 
 class EfficiencyLabel extends Component {
     constructor(props) {
         super(props);
+        this.initialWorkTime;
+        this.initialTime;
         this.workTime;
         this.time;
         this.lastState;
@@ -31,13 +32,16 @@ class EfficiencyLabel extends Component {
     addTimeToThis(slice) {
         let toAdd;
         toAdd = dateSecConverter(slice.finish) - dateSecConverter(slice.start);
-        this.time += toAdd;
-        if (slice.state) this.workTime += toAdd;
+        this.initialTime += toAdd;
+        if (slice.state) this.initialWorkTime += toAdd;
     }
 
     componentDidMount() {
         this.workTime = 0;
         this.time = 1;
+        this.initialTime = 0;
+        this.initialWorkTime = 0;
+
         this.lastState = this.props.state;
 
         let {allIds, byId} = this.props.timeSlices;
@@ -48,6 +52,9 @@ class EfficiencyLabel extends Component {
         
         let now = new Date();
         this.lastCall = now.getSeconds() + now.getMilliseconds() / 1000;
+
+        this.workTime = this.initialWorkTime;
+        this.time = this.initialTime;
         this.id = setInterval(() => this.updateState(), 1000);
     }
 
@@ -69,7 +76,7 @@ class EfficiencyLabel extends Component {
 
         this.time += value;
         if (state) this.workTime += value;
-
+        
         let resultPerc = Math.round(this.workTime / this.time * 10000)/100 + '%';
 
         let wrkTime = dateSecConverter(this.workTime).split(':').slice(0, -1);

@@ -19,7 +19,7 @@ const saveCookies = function({dispatch, getState}) {
         let cookies = JSON.parse(Cookies.get('state'));    
     
         cookies = {...cookies, ...state};
-
+        console.log(state);
         Cookies.set('state', cookies);
         return next(action);
       };
