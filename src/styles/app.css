@@ -15,23 +15,39 @@ body {
 }
 
 .mainView {
-  display: grid;
-  grid-template-columns: 45% 5% 50%;
+  /* display: grid;
+  grid-template-columns: 45% 5% 50%; */
 }
 
 .viewResizer {
+  left: 0 !important;
+  width: 10px;
+  min-height: 500px;
+  height: 100%;
+  display: inline-block;
+  margin: 0 auto;
   position: relative;
   z-index: 2;
-  width: 20px;
   cursor: col-resize;
   background: #343436;
 }
 
 .notepad {
+  width: 49%;
+  vertical-align: top;
+  display: inline-block;
+  padding: 0 5px;
+}
+
+.page {
+  vertical-align: top;
+  display: inline-block;
+  width: 49%;
   padding: 0 5px;
 }
 
 .notepadInput {
+  padding: 7.5px;
   width: 100%;
   min-height: 350px;
   max-height: 500px;
@@ -46,15 +62,14 @@ body {
 .timeRow {
   display: grid;
   grid-template-columns: 30% 40% 15% 15%;
-  grid-template-rows: repeat(auto-fill, 75px);
   background-color: #389C90;
   color: #F4F7F6;
   text-align: center;
 }
 
 .timeRow > div {
-  font-size: 2em;
-  padding: 20px 0;
+  font-size: 1.25em;
+  padding: 13px 0;
 }
 
 
@@ -64,8 +79,8 @@ body {
 
 .timeRow > .startChunck,
 .timeRow > .finishChunck {
-  font-size: 1.25em;
-  padding: 13px 0;
+  font-size: 1em;
+  padding: 5px 0;
 }
 
 .tagLabel {

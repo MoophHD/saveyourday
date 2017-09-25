@@ -8,6 +8,8 @@ import Page from './Page'
 import ControlTable from './ControlTable'
 import Notepad from '../components/Notepad'
 import * as controlActions from '../actions/ControlActions'
+import $ from 'jquery'
+import 'jquery-ui/ui/widgets/draggable'
 
 
 class App extends Component {
@@ -18,7 +20,27 @@ class App extends Component {
     }
   }
 
+  /* eslint-disable */
+  handleDrag({offset}) {
+    let l = offset.left;
+    let prevPerc, nextPerc, halfW = this.winW / 2;
+
+
+    prevPerc = (l/halfW)*49;
+    nextPerc = 98 - prevPerc;
+
+
+    this.resizer.previousElementSibling.style.width = prevPerc + '%';    
+    this.resizer.nextElementSibling.style.width = nextPerc + '%';
+  }
+
   componentDidMount() {
+    this.winW = $(window).width();
+    this.$resizer = $(this.resizer);
+    this.$resizer.draggable({axis: 'x',
+        drag: (e, ui) => this.handleDrag(ui)      
+    });
+
     if (Cookies.get('state')) {
       this.props.controlActions.resetState(JSON.parse(Cookies.get('state')));
     }
@@ -26,9 +48,13 @@ class App extends Component {
   }
   
   handleUnload() {
-    //let cookies = JSON.parse(Cookies.get('state'));
-
+    let cookies = JSON.parse(Cookies.get('state'));
     
+    
+  }
+
+  componentWillUnmount() {
+    this.$resizer.draggable('destroy');
   }
   
   deleteCookies() {
@@ -53,7 +79,7 @@ class App extends Component {
       <Control />
       <div className="mainView">
         <Notepad />
-        <div className="viewResizer"></div>
+        <div className="viewResizer" ref={el => this.resizer = el}></div>
         <Page
               activeTag={tag}
               globalState={state}
