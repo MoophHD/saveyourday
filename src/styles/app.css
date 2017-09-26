@@ -47,6 +47,9 @@ body {
 }
 
 .notepadInput {
+  outline-color: #389C90;
+  font-family: 'Roboto';
+  font-size: 1em;
   padding: 7.5px;
   width: 100%;
   min-height: 350px;
@@ -80,7 +83,7 @@ body {
 .timeRow > .startChunck,
 .timeRow > .finishChunck {
   font-size: 1em;
-  padding: 5px 0;
+  padding: 7.5px 0;
 }
 
 .tagLabel {

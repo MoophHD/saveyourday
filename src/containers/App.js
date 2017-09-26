@@ -8,6 +8,7 @@ import Page from './Page'
 import ControlTable from './ControlTable'
 import Notepad from '../components/Notepad'
 import * as controlActions from '../actions/ControlActions'
+import formatDate from '../gist/formatDate'
 import $ from 'jquery'
 import 'jquery-ui/ui/widgets/draggable'
 
@@ -20,7 +21,6 @@ class App extends Component {
     }
   }
 
-  /* eslint-disable */
   handleDrag({offset}) {
     let l = offset.left;
     let prevPerc, nextPerc, halfW = this.winW / 2;
@@ -34,6 +34,15 @@ class App extends Component {
     this.resizer.nextElementSibling.style.width = nextPerc + '%';
   }
 
+  componentWillMount() {
+    if (Cookies.get('notepad')) {
+      this.npValue = Cookies.get('notepad');
+    }
+    if (Cookies.get('state')) {
+      this.props.controlActions.resetState(JSON.parse(Cookies.get('state')));
+    }
+  }
+
   componentDidMount() {
     this.winW = $(window).width();
     this.$resizer = $(this.resizer);
@@ -41,16 +50,23 @@ class App extends Component {
         drag: (e, ui) => this.handleDrag(ui)      
     });
 
-    if (Cookies.get('state')) {
-      this.props.controlActions.resetState(JSON.parse(Cookies.get('state')));
-    }
     window.addEventListener('beforeunload', () => this.handleUnload())
   }
   
   handleUnload() {
-    let cookies = JSON.parse(Cookies.get('state'));
+    let cookieState = JSON.parse(Cookies.get('state'));
+    let now = new Date();
+    let nowForm = formatDate([now.getHours(), now.getMinutes(), now.getSeconds()]);
+    let {toggleState, changeTag, appendSlice} = this.props.controlActions;
     
-    
+
+    if (cookieState.currentState && cookieState.tagHistory.allIds.length > 0) {
+      changeTag(cookieState.currentTag);     
+      appendSlice(nowForm);
+      toggleState();
+    }
+
+    Cookies.set('notepad', document.querySelector('.notepadInput').value);
   }
 
   componentWillUnmount() {
@@ -59,6 +75,7 @@ class App extends Component {
   
   deleteCookies() {
     Cookies.remove('state');
+    Cookies.remove('notepad');
   }
 
   toggleTable() {
@@ -78,7 +95,7 @@ class App extends Component {
       { this.state.isTableExpanded ? <ControlTable /> : null }
       <Control />
       <div className="mainView">
-        <Notepad />
+        <Notepad cookiesValue={this.npValue ? this.npValue : ''}/>
         <div className="viewResizer" ref={el => this.resizer = el}></div>
         <Page
               activeTag={tag}

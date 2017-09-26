@@ -5,6 +5,13 @@ class Notepad extends Component {
         super(props);
     }
 
+    componentDidMount() {
+        let input = document.querySelector('.notepadInput');
+        input.value = this.props.cookiesValue;
+        input.spellcheck = false;
+    }
+    
+
     render() {
         return (
             <div className="notepad">
