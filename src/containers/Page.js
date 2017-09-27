@@ -68,7 +68,7 @@ class Page extends Component {
           )
         } else {
               return (<div className="breakTimer" key={'_breakID' + id}>
-                  <Timer cut={true} start={startDate} finish={finishDate} alarm={true}/>
+                  <Timer onSliceChange={(id, date, isStart) => editSlice(id, date, isStart)} id={id} cut={true} start={startDate} finish={finishDate} alarm={true}/>
               </div>)
         }
       })

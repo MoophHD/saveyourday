@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, {Component} from 'react'
 import dateSecConverted from '../gist/dateSecConverter' // eslint-disable-line
 import formatDate from '../gist/formatDate'
@@ -11,6 +12,9 @@ export default class Timer extends Component {
             time: '00 : 00'
         }
 
+        this.windowEnterListener = this.windowEnterListener.bind(this); 
+        this.windowClickListener = this.windowClickListener.bind(this); 
+        this.callSubmit = this.callSubmit.bind(this); 
     }
 
     componentDidMount() {
@@ -55,9 +59,63 @@ export default class Timer extends Component {
         this.setState({time: result})
     }
 
+    handleClick(e) {
+        if (!this.props.finish) return;
+        let elem = e.target;
+        if (elem.contentEditable == "true") return;
+
+        elem.contentEditable = true;
+        elem.focus();
+        if (elem.innerHTML.split(' : ').length < 3) elem.innerHTML = '00 : ' + elem.innerHTML;
+
+        this.elem = elem;
+        this.setSubmitListener(elem);
+    }
+
+    setSubmitListener(elem) {
+        window.addEventListener("keydown", this.windowEnterListener);
+        window.addEventListener("click", this.windowClickListener);
+    }
+
+    windowEnterListener(e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();                
+            this.callSubmit(this.elem);
+        }
+    }
+
+    windowClickListener(e) {
+        if (e.target.contentEditable == "true") {
+            return;
+        }
+        
+        this.callSubmit(this.elem);
+    }
+
+    callSubmit(elem) {
+        let finDate = dateSecConverted(this.anchorSecs + dateSecConverted(elem.innerHTML, ' : '));
+        console.log(finDate);
+        
+        if (finDate == this.props.finish) return;
+
+        this.props.onSliceChange(this.props.id, finDate, false);
+
+        this.removeSubmitListeners(elem, this.currTarget);        
+    }
+
+    removeSubmitListeners(elem) {
+        window.removeEventListener("keydown", this.windowEnterListener);
+        window.removeEventListener("click", this.windowClickListener);
+        elem.contentEditable = "false";
+        let arrDate = elem.innerHTML.split(' : ');
+        if (arrDate[0] == '00' && this.props.cut) arrDate.shift();
+
+        elem.innerHTML = arrDate.join(' : ');
+    }
+
     render() {
         return(
-            <div className="timer">
+            <div onClick={::this.handleClick} className="timer">
                 {this.state.time}
             </div>
         )

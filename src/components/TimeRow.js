@@ -48,15 +48,15 @@ export default class TimeRow extends Component {
         let elem = e.target;
         if (elem.contentEditable == "true") return;
 
-        elem.innerHTML = this.props.start;
+        elem.innerHTML = this.props.finish;
         this.setEditable(elem); 
 
         this.currTarget = 'finishChunck';
         this.elem = elem;
-        this.setSubmitListener(elem);
+        this.setSubmitListener();
     }
 
-    setSubmitListener(elem) {
+    setSubmitListener() {
         window.addEventListener("keydown", this.windowEnterListener);
         window.addEventListener("click", this.windowClickListener);
     }
