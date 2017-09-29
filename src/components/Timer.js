@@ -94,11 +94,7 @@ export default class Timer extends Component {
 
     callSubmit(elem) {
         let finDate = dateSecConverted(this.anchorSecs + dateSecConverted(elem.innerHTML, ' : '));
-        console.log(finDate);
-        
-        if (finDate == this.props.finish) return;
-
-        this.props.onSliceChange(this.props.id, finDate, false);
+        if (finDate != this.props.finish) this.props.onSliceChange(this.props.id, finDate, false);
 
         this.removeSubmitListeners(elem, this.currTarget);        
     }

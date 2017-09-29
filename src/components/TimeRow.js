@@ -20,7 +20,13 @@ export default class TimeRow extends Component {
         elem.focus();
     }
 
+    isLastElem(elem) {
+        if (!this.elem || elem == this.elem) return true;
+    }
+
     handleTagLabelClick(e) {
+        if (!this.isLastElem(e.target)) return;
+
         let elem = e.target;
         if (elem.contentEditable == "true") return;
 
@@ -32,6 +38,8 @@ export default class TimeRow extends Component {
     }
 
     handleStartChunckClick(e) {
+        if (!this.isLastElem(e.target)) return;
+        
         let elem = e.target;
         if (elem.contentEditable == "true") return;
 
@@ -44,6 +52,7 @@ export default class TimeRow extends Component {
     }
 
     handleFinishChunckClick(e) {
+        if (!this.isLastElem(e.target)) return;
 
         let elem = e.target;
         if (elem.contentEditable == "true") return;
@@ -77,6 +86,7 @@ export default class TimeRow extends Component {
     }
 
     removeSubmitListener(elem) {
+        this.elem = null;
         window.removeEventListener("keydown", this.windowEnterListener);
         window.removeEventListener("click", this.windowClickListener);
         elem.contentEditable = "false";

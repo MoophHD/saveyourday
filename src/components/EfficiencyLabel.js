@@ -16,31 +16,31 @@ class EfficiencyLabel extends Component {
         }
     }
 
-    componentWillReceiveProps({timeSlices, record}) {
+    componentWillReceiveProps({timeSlices}) {
         let {byId, allIds} = timeSlices;
-        
-        if (allIds.length > 0) this.addTimeToThis(byId[allIds[allIds.length-1]]);
-        if (record != this.props.record) {
-            if (record) {
-                this.id = setInterval(() => this.updateState(), 1000);
-            } else {
-                clearInterval(this.id);
-            }
-        }
+
+        this.clearValues();
+        allIds.forEach((id) => {
+            this.addTimeToThis(byId[id]);
+        })
     }
 
     addTimeToThis(slice) {
         let toAdd;
         toAdd = dateSecConverter(slice.finish) - dateSecConverter(slice.start);
-        this.initialTime += toAdd;
-        if (slice.state) this.initialWorkTime += toAdd;
+        this.time += toAdd;
+        if (slice.state) this.workTime += toAdd;
     }
 
-    componentDidMount() {
+    clearValues() {
         this.workTime = 0;
         this.time = 1;
         this.initialTime = 0;
         this.initialWorkTime = 0;
+    }
+
+    componentDidMount() {
+        this.clearValues();
 
         this.lastState = this.props.state;
 
@@ -53,36 +53,36 @@ class EfficiencyLabel extends Component {
         let now = new Date();
         this.lastCall = now.getSeconds() + now.getMilliseconds() / 1000;
 
-        this.workTime = this.initialWorkTime;
-        this.time = this.initialTime;
-        this.id = setInterval(() => this.updateState(), 1000);
+        this.id = setInterval(() => this.tick(), 1000);
     }
 
     componentWillUnmount() {
         clearInterval(this.id);
     }
-        
-
-    updateState() {
+     
+    tick() {
         let state = this.props.state;
         let lastCall = this.lastCall;
 
         let now = new Date();
         let call = now.getSeconds() + now.getMilliseconds() / 1000;
         
-        let value = call > lastCall ? call - lastCall : 60 + call - lastCall;
+        let value = (call > lastCall) ? call - lastCall : 60 + call - lastCall;
 
         this.lastCall = call;
 
         this.time += value;
         if (state) this.workTime += value;
-        
-        let resultPerc = Math.round(this.workTime / this.time * 10000)/100 + '%';
 
+        this.updateState();
+        
+    }
+
+    updateState() {
         let wrkTime = dateSecConverter(this.workTime).split(':').slice(0, -1);
         let time = dateSecConverter(this.time).split(':').slice(0, -1);
  
-
+        let resultPerc = Math.round(this.workTime / this.time * 10000)/100 + '%';
         let resultTime = `${wrkTime[0]}h${wrkTime[1]}m/${time[0]}h${time[1]}m`
         this.setState((prevState, props) => { // eslint-disable-line
             return {
@@ -97,7 +97,11 @@ class EfficiencyLabel extends Component {
 
 
         return(
-            <div className="effLabel" onClick={() => {this.setState({isPercMode: !this.state.isPercMode})}}>
+            <div className="effLabel" 
+                onClick={() => {this.setState({isPercMode: !this.state.isPercMode})}}
+                onSelectStart={(e) => e.preventDefault()} 
+                onMouseDown={(e) => e.preventDefault()}
+                >
                 {this.state.isPercMode ? this.state.effPerc : this.state.effTime}
             </div>
         )
