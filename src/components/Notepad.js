@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import setSelectionRange from '../gist/setSelectionRange'
 
 class Notepad extends Component {
     constructor(props) {
@@ -47,32 +48,56 @@ class Notepad extends Component {
         if (e.key == 'Tab') {
             e.preventDefault();
             
+            let cursorPos = this.area.selectionStart;            
             let areaValue = this.area.value;
             let unformattedArr = areaValue.match(/(\d{1,4}|\d{1,2}\.\d{1,2})(\:|\ )(\d{1,2}\.\d{1,2}|\d{1,4})/g);
+            let regFormatted = /\d{1,2}\-\d{1,2}(\ \:\ )\d{1,2}\-\d{1,2}/g;
+            let formattedArr;
+            let lastFormatted;
+            let lastInd;
 
             if (unformattedArr) {
                 unformattedArr.forEach(function(slice, ind) {
-                    areaValue = areaValue.replace(slice, this.parseDate(slice));        
+                    areaValue = areaValue.replace(slice, this.parseDate(slice));    
                 }, this);
             }
             
-            let formattedArr = areaValue.match(/\d{1,2}\-\d{1,2}(\ \:\ )\d{1,2}\-\d{1,2}/g);
+            let formattedChuncks = areaValue.match(/\d{1,2}\-\d{1,2}(\ \:\ )\d{1,2}\-\d{1,2}/g);
 
-            if (formattedArr) {
-                let lastFormatted = formattedArr[formattedArr.length - 1];
-                areaValue += '  ';
-                areaValue += this.addMins(lastFormatted, 30);
+            if (areaValue.search(regFormatted) != -1) {
+                let prevResult = areaValue.match(regFormatted)[0];
+                lastInd = areaValue.search(regFormatted) + prevResult.length;
+                while (formattedArr = regFormatted.exec(areaValue)) {
+                    if (regFormatted.lastIndex > cursorPos) { 
+                        lastFormatted = prevResult;
+                        
+                        break;
+                    }
+                    prevResult =  formattedArr[0];
+                    lastInd = formattedArr.index + prevResult.length;
+                  }
+
+                areaValue = areaValue.slice(0, lastInd) + '\n' + this.addMins(lastFormatted ? lastFormatted : formattedChuncks[formattedChuncks.length - 1], 30) + areaValue.slice(lastInd, areaValue.length) ;
             }
-
-
+            console.log(lastFormatted);
             this.area.value = areaValue;
+            if (lastFormatted == areaValue.match(regFormatted)[0]) {
+                this.area.value += '\n'
+                setSelectionRange(this.area, areaValue.length+1, areaValue.length+1);
+            } else if (lastFormatted == undefined) {
+                setSelectionRange(this.area, areaValue.length, areaValue.length);
+            } else {
+                this.area.value += '\n'
+                setSelectionRange(this.area, lastInd, lastInd);
+            }
         }
     }
 
+
+
     addMins(date, minValue) {
         let hrs = (minValue > 59) ? ~~(minValue/60) : 0;
-        let mins = minValue % 60;
-
+        let mins = minValue % 60 ? minValue % 60 : 0;
         let dateChuncks = date.split(' : ');
         let tempChunck;
         
@@ -89,10 +114,8 @@ class Notepad extends Component {
 
                 tempChunck[1] = tempChunck[1] % 60;
             }
-            console.log(tempChunck);
             tempChunck[0] = this.checkAndFixZeros(tempChunck[0]);
             tempChunck[1] = this.checkAndFixZeros(tempChunck[1]);
-            console.log(tempChunck);
 
             dateChuncks[ind] = tempChunck.join('-');
         }, this)
