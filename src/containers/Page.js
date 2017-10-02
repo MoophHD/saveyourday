@@ -7,8 +7,8 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import Cookies from 'js-cookie'
 import * as actions from '../actions/ControlTableActions'
-// import 'createjs'
-// import createjs from 'createjs-easeljs'
+import * as createjs from 'createjs-module';
+import moment from 'moment';
 
 class Page extends Component {
 	constructor(props) {
@@ -20,27 +20,92 @@ class Page extends Component {
     (`mount, ${this.clear}`);
   }
 
-  // init(target) {
-  //   return; //temp-0
-  //   let stage = new createjs.Stage(target);
+  init(target) {
+    let originX = 0,
+        originY = 0,
+        offsetX = 250,
+        offsetY = 150;
 
-  //   let shape = new createjs.Shape();
-  //   let rect = new createjs.Graphics.Circle(0, 0, 100);
-  //   let color = new createjs.Graphics.Fill('tomato');
+    this.stage = new createjs.Stage(target);
+    let stage = this.stage;
 
-  //   shape.graphics.append(createjs.Graphics.beginCmd)
-  //     .append(rect)
-  //     .append(color);
+    let mainCircle = new createjs.Shape();
+    let circle = new createjs.Graphics.Circle(0, 0, 150);
+    let color = new createjs.Graphics.Fill('lightgray');
 
-  //   shape.x = 100;
-  //   shape.y = 100;
+    mainCircle.graphics.append(createjs.Graphics.beginCmd)
+      .append(circle)
+      .append(color);
 
-  //   stage.addChild(shape);
+    this.container = new createjs.Container();
+    let container = this.container;
 
-  //   stage.update();
+    container.x = offsetX;
+    container.y = offsetY;
+    mainCircle.x = offsetX;
+    mainCircle.y = offsetY;
 
-  //   createjs.Ticker.setFPS(60);
-  // }
+    stage.addChild(mainCircle, container );
+
+    stage.update();
+
+    this.redrawArcs();
+    
+    // createjs.Ticker.setFPS(60);
+  }
+
+  redrawArcs() {
+    this.container.removeAllChildren();
+
+    let {allIds, byId} = this.props.timeSlices;
+    let {allIds:tagIds, byId:tagById} = this.props.tagHistory;
+
+    let allTime = 0;
+    let timeSpent = {};
+    let oldAnchor = -Math.PI/2;
+
+    allIds.forEach(function(id) {
+      let start = byId[id].start.split(':');
+      let finish = byId[id].finish.split(':');
+      
+      let d1 = moment({h:start[0], m:start[1], s:start[2]});
+      let d2 = moment({h:finish[0], m:finish[1], s:finish[2]});
+      
+      let diff = d2.diff(d1, 'seconds');
+
+      if (tagIds.indexOf(id) != -1 ) {
+        let tag = tagById[id];
+        timeSpent[tag] = timeSpent[tag] ? timeSpent[tag] + diff : diff;
+      }
+
+      allTime += diff;
+      
+    }, this);
+    console.log(timeSpent);
+    console.log(`alltime : ${allTime}`)
+    
+    for (let tag in timeSpent) {
+      let anchor = oldAnchor + (timeSpent[tag] /allTime) * 2 * Math.PI;
+      let color = this.genColor();
+
+      let arcShape = new createjs.Shape();
+
+      arcShape.graphics.f(createjs.Graphics.getRGB(color.r, color.g, color.b));
+      arcShape.graphics.moveTo(0, 0);
+      arcShape.graphics.arc(0, 0, 150, oldAnchor, anchor);
+
+      
+
+      oldAnchor = anchor;
+      
+      this.container.addChild(arcShape);
+      this.stage.update();
+    }
+  }
+
+  genColor() {
+    return {r: ~~(Math.random()*255), g: ~~(Math.random()*255), b: ~~(Math.random()*255)}
+  }
 
 	render() {
       const {tagHistory, timeSlices, globalState, actions} = this.props; 
@@ -101,7 +166,7 @@ class Page extends Component {
 
       return(
           <div className="page">
-            <canvas width="500" height="500"></canvas>
+            {/* <canvas className="pageCanvas" ref={(e) => this.init(e)} width="500" height="500"></canvas> */}
             {listItems}
           </div>
       )

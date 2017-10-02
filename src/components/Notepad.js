@@ -82,15 +82,12 @@ class Notepad extends Component {
                 
 
                 let prevToLineEnd = new RegExp(prevResult + ".*$", "gm");
-                let realInd = lastInd + prevToLineEnd.exec(areaValue)[0].length;
+                let realInd = lastInd + prevToLineEnd.exec(areaValue)[0].length + 1;
                   
-
-                
-
                 areaValue = areaValue.slice(0, realInd) + '\n' + this.addMins(lastFormatted ? lastFormatted : formattedChuncks[formattedChuncks.length - 1], 30, true) + areaValue.slice(realInd, areaValue.length) ;
             }
             this.area.value = areaValue;
-
+            console.log(lastFormatted);
             if (lastFormatted == areaValue.match(regFormatted)[0]) {
                 setSelectionRange(this.area, areaValue.length+1, areaValue.length+1);
             } else if (lastFormatted == undefined) {

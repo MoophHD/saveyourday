@@ -66,7 +66,7 @@ class App extends Component {
       toggleState();
     }
 
-    Cookies.set('notepad', document.querySelector('.notepadInput').value, {expires: 1});
+    Cookies.set('notepad', document.querySelector('.notepadInput').value, {expires: 2});
   }
 
   componentWillUnmount() {
