@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types' 
 import TimeRow from '../components/TimeRow'
@@ -6,7 +7,8 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import Cookies from 'js-cookie'
 import * as actions from '../actions/ControlTableActions'
-
+// import 'createjs'
+// import createjs from 'createjs-easeljs'
 
 class Page extends Component {
 	constructor(props) {
@@ -17,6 +19,28 @@ class Page extends Component {
     this.clear = Cookies.get('state') ? false : true;
     (`mount, ${this.clear}`);
   }
+
+  // init(target) {
+  //   return; //temp-0
+  //   let stage = new createjs.Stage(target);
+
+  //   let shape = new createjs.Shape();
+  //   let rect = new createjs.Graphics.Circle(0, 0, 100);
+  //   let color = new createjs.Graphics.Fill('tomato');
+
+  //   shape.graphics.append(createjs.Graphics.beginCmd)
+  //     .append(rect)
+  //     .append(color);
+
+  //   shape.x = 100;
+  //   shape.y = 100;
+
+  //   stage.addChild(shape);
+
+  //   stage.update();
+
+  //   createjs.Ticker.setFPS(60);
+  // }
 
 	render() {
       const {tagHistory, timeSlices, globalState, actions} = this.props; 
@@ -77,6 +101,7 @@ class Page extends Component {
 
       return(
           <div className="page">
+            <canvas width="500" height="500"></canvas>
             {listItems}
           </div>
       )

@@ -79,13 +79,19 @@ class Notepad extends Component {
                     prevResult =  formattedArr[0];
                     lastInd = formattedArr.index + prevResult.length;
                   }
+                
 
-                areaValue = areaValue.slice(0, lastInd) + '\n' + this.addMins(lastFormatted ? lastFormatted : formattedChuncks[formattedChuncks.length - 1], 30, true) + areaValue.slice(lastInd, areaValue.length) ;
+                let prevToLineEnd = new RegExp(prevResult + ".*$", "gm");
+                let realInd = lastInd + prevToLineEnd.exec(areaValue)[0].length;
+                  
+
+                
+
+                areaValue = areaValue.slice(0, realInd) + '\n' + this.addMins(lastFormatted ? lastFormatted : formattedChuncks[formattedChuncks.length - 1], 30, true) + areaValue.slice(realInd, areaValue.length) ;
             }
             this.area.value = areaValue;
 
             if (lastFormatted == areaValue.match(regFormatted)[0]) {
-                this.area.value += '\n'
                 setSelectionRange(this.area, areaValue.length+1, areaValue.length+1);
             } else if (lastFormatted == undefined) {
                 setSelectionRange(this.area, areaValue.length, areaValue.length);
@@ -95,8 +101,6 @@ class Notepad extends Component {
             }
         } else if (e.ctrlKey && ( e.key == "ArrowDown" || e.key == "ArrowUp" )) {
             e.preventDefault()
-            console.log(e);
-            console.log(this.regFormatted.test(selection));
             let selection = window.getSelection().toString();
             if (this.regFormatted.test(selection)) {
                 let area = this.area.value;
@@ -152,7 +156,6 @@ class Notepad extends Component {
                         tempChunck[1] = parseInt(tempChunck[1]) + mins;
 
 
-                        console.log(tempChunck);
                         if (tempChunck[1] < 0 ) {
                             tempChunck[0] -= ~~(tempChunck[1]/60) + 1;
                             tempChunck[1] += 60;

@@ -3,3 +3,4 @@ export const CHANGE_TAG = 'CHANGE_TAG';
 export const APPEND_SLICE = 'APPEND_SLICE';
 export const TOGGLE_TWICE = 'TOGGLE_TWICE';
 export const RESET_STATE = 'RESET_STATE';
+export const TOGGLE_DISPLAY_MODE = 'TOGGLE_DISPLAY_MODE';

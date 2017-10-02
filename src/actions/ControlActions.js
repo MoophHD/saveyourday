@@ -3,7 +3,8 @@ import {
     CHANGE_TAG,
     APPEND_SLICE,
     TOGGLE_TWICE,
-    RESET_STATE
+    RESET_STATE,
+    TOGGLE_DISPLAY_MODE
 } from '../constants/Control'
 
 
@@ -40,5 +41,12 @@ export function resetState(newState) {
     return {
         type: RESET_STATE,
         payload: newState
+    }
+}
+
+export function toggleDisplayMode(type) {
+    return {
+        type: TOGGLE_DISPLAY_MODE,
+        payload: type
     }
 }

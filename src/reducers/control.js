@@ -4,7 +4,8 @@ import {
   CHANGE_TAG,
   APPEND_SLICE,
   TOGGLE_TWICE,
-  RESET_STATE
+  RESET_STATE,
+  TOGGLE_DISPLAY_MODE
 } from '../constants/Control'
 
 import {
@@ -37,6 +38,8 @@ let id,tagById,tagIds, sliceById, sliceIds, date, sliceState, slices;
 
 export default function control(state = initialState, action) {
   switch (action.type) {
+    case TOGGLE_DISPLAY_MODE:
+      return {...state, displayMode: action.payload}
     case APPEND_CUSTOM_SLICE:
       id = action.id ? action.id : getID(state);
 
