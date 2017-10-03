@@ -15,7 +15,8 @@ class Notepad extends Component {
         this.area.spellcheck = false;
         this.localRegFormatted = /\d{1,2}\-\d{1,2}(\ \:\ )\d{1,2}\-\d{1,2}/;
         this.regFormatted = /\d{1,2}\-\d{1,2}(\ \:\ )\d{1,2}\-\d{1,2}/g;
-
+        this.chunckReg = /\d{1,2}\-\d{1,2}/;
+``
         this.area.addEventListener('keydown', (e) => this.handleKeyPress(e));
     }
 
@@ -88,30 +89,71 @@ class Notepad extends Component {
             }
             this.area.value = areaValue;
             console.log(lastFormatted);
-            if (lastFormatted == areaValue.match(regFormatted)[0]) {
-                setSelectionRange(this.area, areaValue.length+1, areaValue.length+1);
-            } else if (lastFormatted == undefined) {
-                setSelectionRange(this.area, areaValue.length, areaValue.length);
-            } else {
-                this.area.value += '\n'
-                setSelectionRange(this.area, lastInd, lastInd);
-            }
+            setSelectionRange(this.area, lastInd, lastInd);
+
+            // if (lastFormatted == areaValue.match(regFormatted)[0]) {
+            //     setSelectionRange(this.area, areaValue.length+1, areaValue.length+1);
+            // } else if (lastFormatted == undefined) {
+            //     setSelectionRange(this.area, areaValue.length, areaValue.length);
+            // } else {
+            //     setSelectionRange(this.area, lastInd, lastInd);
+            // }
+
         } else if (e.ctrlKey && ( e.key == "ArrowDown" || e.key == "ArrowUp" )) {
             e.preventDefault()
             let selection = window.getSelection().toString();
+            let area = this.area.value
+            let selInd = area.indexOf(selection);
+            let mod = e.key == "ArrowUp" ? 1 : -1;
+            
             if (this.regFormatted.test(selection)) {
-                let area = this.area.value;
-                let realInd = area.indexOf(selection) + selection.search(this.localRegFormatted);
-                let selectedDate = this.localRegFormatted.exec(selection)[0];
+                let dates = selection.match(this.regFormatted);
+                
+                dates.forEach((date) => {
+                    selection = selection.replace(date, this.addMins(date, 15*mod, false) ); 
+                }, this)
 
-                let mod = e.key == "ArrowUp" ? 1 : -1;
+                this.area.value = area.slice(0, selInd) + selection + area.slice(selInd + selection.length);
 
-                area = area.slice(0, realInd) + this.addMins(selectedDate, 15*mod, false) + area.slice(realInd + selectedDate.length, area.length);
-                this.area.value = area;
+                setSelectionRange(this.area, selInd, selInd + selection.length);
+                
+            } else if (this.chunckReg.test(selection)) {
+                let chunck = selection.match(this.chunckReg)[0];
+                selection = selection.replace(chunck, this.addMinsToChunck(chunck, 15*mod));
 
-                setSelectionRange(this.area, realInd, realInd + selectedDate.length);
+                this.area.value = area.slice(0, selInd) + selection + area.slice(selInd + selection.length, area.length);
+
+                setSelectionRange(this.area, selInd, selInd + selection.length);
             }
         }
+    }
+
+    addMinsToChunck(chunk, minValue) {
+        let hrs = (minValue > 59) ? ~~(minValue/60) : 0;
+        let mins = minValue % 60 ? minValue % 60 : 0;
+        let tempChunck = chunk.split('-');
+
+        tempChunck[0] = parseInt(tempChunck[0]) + hrs;
+        tempChunck[1] = parseInt(tempChunck[1]) + mins;
+
+        if (tempChunck[1] < 0 ) {
+            tempChunck[0] -= ~~(tempChunck[1]/60) + 1;
+            tempChunck[1] += 60;
+        } else if (tempChunck[1] > 59) {
+            tempChunck[0] += ~~(tempChunck[1]/60);
+            tempChunck[1] -= 60;
+        }
+
+        if (tempChunck[0] < 0 ) {
+            tempChunck[0] += 12;
+        } else if (tempChunck[0] > 11) {
+            tempChunck[0] -= 12;
+        }
+
+        tempChunck[0] = this.checkAndFixZeros(tempChunck[0]);
+        tempChunck[1] = this.checkAndFixZeros(tempChunck[1]);
+
+        return tempChunck.join('-');
     }
 
     addMins(date, minValue, toLast=true) {

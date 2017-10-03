@@ -78,12 +78,6 @@ class App extends Component {
     Cookies.remove('notepad');
   }
 
-  toggleTable() {
-    this.setState((prevState, props)=> { // eslint-disable-line
-      return {isTableExpanded: !prevState.isTableExpanded}
-    })
-  }
-
   render() {
     const {tagHistory, state, timeSlices, tag} = this.props; 
 
@@ -91,7 +85,6 @@ class App extends Component {
     return (
     <div className="app">
       <button onClick={::this.deleteCookies}>Get rid of cookies</button>
-      <button onClick={::this.toggleTable}>ToggleTable</button>
       { this.state.isTableExpanded ? <ControlTable /> : null }
       <Control />
       <div className="mainView">

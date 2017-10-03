@@ -12,7 +12,10 @@ import moment from 'moment';
 
 class Page extends Component {
 	constructor(props) {
-		super(props);
+    super(props);
+    this.state = {
+      showCanvas: false
+    }
   }
 
   componentWillMount() {
@@ -51,18 +54,30 @@ class Page extends Component {
 
     this.redrawArcs();
     
-    // createjs.Ticker.setFPS(60);
+    createjs.Ticker.setFPS(24);
+
+    createjs.Ticker.addEventListener("tick", handleTick.bind(this));
+    function handleTick(event) {
+        if (!event.paused) {
+            this.redrawArcs();
+        }
+    }
   }
 
   redrawArcs() {
     this.container.removeAllChildren();
 
-    let {allIds, byId} = this.props.timeSlices;
+    let state = this.props.globalState;
+    let activeTag = this.props.activeTag;
+    let {allIds, byId, lastDate} = this.props.timeSlices;
     let {allIds:tagIds, byId:tagById} = this.props.tagHistory;
 
     let allTime = 0;
     let timeSpent = {};
     let oldAnchor = -Math.PI/2;
+
+    lastDate = lastDate.split(':');
+    let lDateMoment = moment({h: lastDate[0], m: lastDate[1], s:lastDate[2]});
 
     allIds.forEach(function(id) {
       let start = byId[id].start.split(':');
@@ -81,12 +96,21 @@ class Page extends Component {
       allTime += diff;
       
     }, this);
-    console.log(timeSpent);
-    console.log(`alltime : ${allTime}`)
+
+    let lastDateDiff = moment(new Date()).diff(lDateMoment, 'seconds');
+
+    allTime += lastDateDiff;
     
+
+    if (state) {
+      timeSpent[activeTag] = timeSpent[activeTag] ? timeSpent[activeTag] + lastDateDiff : lastDateDiff;
+    }
+    
+
     for (let tag in timeSpent) {
       let anchor = oldAnchor + (timeSpent[tag] /allTime) * 2 * Math.PI;
-      let color = this.genColor();
+      // let color = this.genColor();
+      let color = {r:100, g:150, b: 100};
 
       let arcShape = new createjs.Shape();
 
@@ -105,6 +129,14 @@ class Page extends Component {
 
   genColor() {
     return {r: ~~(Math.random()*255), g: ~~(Math.random()*255), b: ~~(Math.random()*255)}
+  }
+
+  toggleCanvas() {
+    this.setState((prev) => {
+      return {
+        showCanvas: !prev.showCanvas
+      }
+    })
   }
 
 	render() {
@@ -166,8 +198,9 @@ class Page extends Component {
 
       return(
           <div className="page">
-            {/* <canvas className="pageCanvas" ref={(e) => this.init(e)} width="500" height="500"></canvas> */}
+            <canvas style={{display: this.state.showCanvas ? 'block' : 'none'}} className="pageCanvas" ref={(e) => this.init(e)} width="500" height="500"></canvas>
             {listItems}
+            <button className="toggleCanvasButton" onClick={() => {this.toggleCanvas()}}>Graph?</button>
           </div>
       )
 

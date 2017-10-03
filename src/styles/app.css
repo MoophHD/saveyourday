@@ -14,10 +14,7 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
-.mainView {
-  /* display: grid;
-  grid-template-columns: 45% 5% 50%; */
-}
+
 
 .viewResizer {
   left: 0 !important;
@@ -168,4 +165,10 @@ body {
 [contenteditable="true"] {
   background-color: #FB9E5A;
   outline: none;
+}
+
+.toggleCanvasButton {
+  position: absolute;
+  top: 7.5px;
+  left: 225px;
 }
