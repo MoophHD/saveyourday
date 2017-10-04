@@ -54,9 +54,11 @@ class Notepad extends Component {
             let areaValue = this.area.value;
             let unformattedArr = areaValue.match(/(\d{1,4}|\d{1,2}\.\d{1,2})(\:|\ )(\d{1,2}\.\d{1,2}|\d{1,4})/g);
             let regFormatted = this.regFormatted;
-            let formattedArr;
-            let lastFormatted;
-            let lastInd;
+            let formattedArr,
+                lastFormatted,
+                lastInd,
+                lastDate,
+                realInd;
 
             if (unformattedArr) {
                 unformattedArr.forEach(function(slice, ind) {
@@ -80,24 +82,20 @@ class Notepad extends Component {
                     prevResult =  formattedArr[0];
                     lastInd = formattedArr.index + prevResult.length;
                   }
-                
+                lastDate = lastFormatted ? lastFormatted : formattedChuncks[formattedChuncks.length - 1];
 
                 let prevToLineEnd = new RegExp(prevResult + ".*$", "gm");
-                let realInd = lastInd + prevToLineEnd.exec(areaValue)[0].length + 1;
-                  
-                areaValue = areaValue.slice(0, realInd) + '\n' + this.addMins(lastFormatted ? lastFormatted : formattedChuncks[formattedChuncks.length - 1], 30, true) + areaValue.slice(realInd, areaValue.length) ;
+                realInd = lastInd + prevToLineEnd.exec(areaValue)[0].length + 1;
+                let skipLine;
+                if (areaValue[areaValue.length-1] == '\n' && areaValue[areaValue.length-2] == '\n') {
+                    skipLine = '\n';
+                } else {
+                    skipLine = '';
+                }
+                areaValue = areaValue.slice(0, realInd) + '\n' + this.addMins( lastDate, 30, true) + areaValue.slice(realInd, areaValue.length) ;
             }
             this.area.value = areaValue;
-            console.log(lastFormatted);
-            setSelectionRange(this.area, lastInd, lastInd);
-
-            // if (lastFormatted == areaValue.match(regFormatted)[0]) {
-            //     setSelectionRange(this.area, areaValue.length+1, areaValue.length+1);
-            // } else if (lastFormatted == undefined) {
-            //     setSelectionRange(this.area, areaValue.length, areaValue.length);
-            // } else {
-            //     setSelectionRange(this.area, lastInd, lastInd);
-            // }
+            setSelectionRange(this.area, realInd+lastDate.length, realInd+lastDate.length);
 
         } else if (e.ctrlKey && ( e.key == "ArrowDown" || e.key == "ArrowUp" )) {
             e.preventDefault()

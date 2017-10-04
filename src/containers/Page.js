@@ -9,6 +9,7 @@ import Cookies from 'js-cookie'
 import * as actions from '../actions/ControlTableActions'
 import * as createjs from 'createjs-module';
 import moment from 'moment';
+import ColorHash from 'color-hash'
 
 class Page extends Component {
 	constructor(props) {
@@ -101,16 +102,24 @@ class Page extends Component {
 
     allTime += lastDateDiff;
     
+    if (activeTag == '') {
+      activeTag = 'None';
+    }
 
     if (state) {
       timeSpent[activeTag] = timeSpent[activeTag] ? timeSpent[activeTag] + lastDateDiff : lastDateDiff;
     }
+
     
 
     for (let tag in timeSpent) {
+      console.log(timeSpent);
       let anchor = oldAnchor + (timeSpent[tag] /allTime) * 2 * Math.PI;
       // let color = this.genColor();
-      let color = {r:100, g:150, b: 100};
+      let colorHash = new ColorHash({saturation: 0.5, lightness: 0.5});
+      let colorArr = colorHash.rgb(tag);
+
+      let color = {r:colorArr[0], g:colorArr[1], b: colorArr[2]};
 
       let arcShape = new createjs.Shape();
 
