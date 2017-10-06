@@ -59,9 +59,13 @@ class Page extends Component {
 
     createjs.Ticker.addEventListener("tick", handleTick.bind(this));
     function handleTick(event) {
-        if (!event.paused) {
+        if (createjs.Ticker.getPaused()) {
             this.redrawArcs();
         }
+
+    stage.update(event);
+
+    
     }
   }
 
@@ -113,10 +117,9 @@ class Page extends Component {
     
 
     for (let tag in timeSpent) {
-      console.log(timeSpent);
       let anchor = oldAnchor + (timeSpent[tag] /allTime) * 2 * Math.PI;
       // let color = this.genColor();
-      let colorHash = new ColorHash({saturation: 0.5, lightness: 0.5});
+      let colorHash = new ColorHash({saturation: 0.35, lightness: 0.65});
       let colorArr = colorHash.rgb(tag);
 
       let color = {r:colorArr[0], g:colorArr[1], b: colorArr[2]};
@@ -126,26 +129,96 @@ class Page extends Component {
       arcShape.graphics.f(createjs.Graphics.getRGB(color.r, color.g, color.b));
       arcShape.graphics.moveTo(0, 0);
       arcShape.graphics.arc(0, 0, 150, oldAnchor, anchor);
-
-      
+      arcShape.attachedTag = tag;
+      arcShape.addEventListener("mouseover", this.handleArcHover.bind(this));
+      arcShape.addEventListener("mouseout", this.handleArcUnhover.bind(this));
 
       oldAnchor = anchor;
       
       this.container.addChild(arcShape);
-      this.stage.update();
     }
   }
 
-  genColor() {
-    return {r: ~~(Math.random()*255), g: ~~(Math.random()*255), b: ~~(Math.random()*255)}
+  handleArcUnhover(e) {
+    console.log('unhover');
+    this.stage.removeChild(this.lastTagLabel);
+    this.lastTagLabel = null;
+    this.stage.update();
+  }
+
+  handleArcHover(e) {
+    let arc = e.target;
+
+    if (this.lastTagLabel && this.lastTagLabel.attachedTag == arc.attachedTag) return;
+
+    let rectH = 50;
+    let rectW = 150;
+
+    console.log(arc.getBounds());
+
+    
+    let tagLb = new createjs.Shape(
+      new createjs.Graphics().f("white").drawRect(0, 0, rectW, rectH)
+    );
+
+    let tagText = new createjs.Text(arc.attachedTag, "18px Roboto", "#333")
+
+    tagText.set({
+      textAlign: 'center',
+      textBaseline: 'middle',
+      x: rectW / 2,
+      y: rectH / 2
+    })
+
+    let tagLbContainer = new createjs.Container();
+    tagLbContainer.addChild(tagLb, tagText);
+
+    tagLbContainer.x = 100;
+    tagLbContainer.y = 100;
+
+    tagLbContainer.attachedTag = arc.attachedTag;
+    
+    this.stage.addChild(tagLbContainer);
+
+    this.lastTagLabel = tagLbContainer;
+
+    this.stage.update();
+
   }
 
   toggleCanvas() {
+    this.stage.enableMouseOver(12);
+    
+    if (createjs.Ticker.getPaused()) {
+      
+      this.togglePause();
+    } else {
+
+      
+      this.redrawArcs();
+      this.container.children.forEach((el) => {
+        // console.log(el.graphics.command);
+        let arcCommand = el.graphics.command;
+        createjs.Tween.get(el.graphics.command)
+        .to({endAngle: 0}, 650, createjs.Ease.quintIn);
+      })
+
+      this.togglePause();
+      this.stage.update();
+      
+    }
+    
+
+
     this.setState((prev) => {
       return {
         showCanvas: !prev.showCanvas
       }
     })
+  }
+
+  togglePause() {
+    createjs.Ticker.setPaused(!createjs.Ticker.getPaused());
   }
 
 	render() {
