@@ -86,13 +86,13 @@ class Notepad extends Component {
 
                 let prevToLineEnd = new RegExp(prevResult + ".*$", "gm");
                 realInd = lastInd + prevToLineEnd.exec(areaValue)[0].length + 1;
-                let skipLine;
-                if (areaValue[areaValue.length-1] == '\n' && areaValue[areaValue.length-2] == '\n') {
-                    skipLine = '\n';
-                } else {
-                    skipLine = '';
-                }
-                areaValue = areaValue.slice(0, realInd) + '\n' + this.addMins( lastDate, 30, true) + areaValue.slice(realInd, areaValue.length) ;
+                let skipLine = '\n';
+                console.log(areaValue[areaValue.length-1])
+
+                if (areaValue[areaValue.length-1] == '\n') skipLine ='';
+
+                console.log(skipLine);
+                areaValue = areaValue.slice(0, realInd) + skipLine + this.addMins( lastDate, 30, true) + areaValue.slice(realInd, areaValue.length) ;
             }
             this.area.value = areaValue;
             setSelectionRange(this.area, realInd+lastDate.length, realInd+lastDate.length);

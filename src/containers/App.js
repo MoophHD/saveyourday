@@ -75,7 +75,6 @@ class App extends Component {
   
   deleteCookies() {
     Cookies.remove('state');
-    Cookies.remove('notepad');
   }
 
   render() {
