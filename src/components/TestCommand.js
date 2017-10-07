@@ -42,7 +42,6 @@ export default class TestCommand extends Component {
         createjs.Ticker.addEventListener("tick", handleTick.bind(this));     
 
         function handleTick() {
-            console.log('1');
             commandArc.startAngle += .1;
             this.stage.update();
         }   

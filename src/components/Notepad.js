@@ -16,7 +16,6 @@ class Notepad extends Component {
         this.localRegFormatted = /\d{1,2}\-\d{1,2}(\ \:\ )\d{1,2}\-\d{1,2}/;
         this.regFormatted = /\d{1,2}\-\d{1,2}(\ \:\ )\d{1,2}\-\d{1,2}/g;
         this.chunckReg = /\d{1,2}\-\d{1,2}/;
-``
         this.area.addEventListener('keydown', (e) => this.handleKeyPress(e));
     }
 
@@ -87,11 +86,9 @@ class Notepad extends Component {
                 let prevToLineEnd = new RegExp(prevResult + ".*$", "gm");
                 realInd = lastInd + prevToLineEnd.exec(areaValue)[0].length + 1;
                 let skipLine = '\n';
-                console.log(areaValue[areaValue.length-1])
 
                 if (areaValue[areaValue.length-1] == '\n') skipLine ='';
 
-                console.log(skipLine);
                 areaValue = areaValue.slice(0, realInd) + skipLine + this.addMins( lastDate, 30, true) + areaValue.slice(realInd, areaValue.length) ;
             }
             this.area.value = areaValue;

@@ -105,24 +105,9 @@ export default class GraphCircle extends Component{
         }
         this.container.removeAllChildren();
         
-        let arcTags = this.arcTimeSpent.keys();
-
-        for (let tag in timeSpent) {
-        //   let currTags = timeSpent.keys();
-          
-        //   if (!arcTags.indexOf(tag)) {
-        //     if (currTags.length > arcTags.length ) { // added a tag
-        //       this.addArc(tag);
-             
-        //     } else if (currTags.length < arcTags.length) {   // changed to an existing tag
-              
-        //   }
-        // }
-
-        
+        for (let tag in timeSpent) {        
 
           let anchor = oldAnchor + (timeSpent[tag] /allTime) * 2 * Math.PI;
-          // let color = this.genColor();
           let colorHash = new ColorHash({saturation: 0.35, lightness: 0.65});
           let colorArr = colorHash.rgb(tag);
     
@@ -146,7 +131,6 @@ export default class GraphCircle extends Component{
 
       
       handleArcUnhover(e) {
-        console.log('unhover');
         if (!this.lastTagLabel) return;
         this.stage.removeChild(this.lastTagLabel);
         this.lastTagLabel = null;
@@ -154,10 +138,7 @@ export default class GraphCircle extends Component{
       }
 
       handleArcHover(e) {
-        console.log('hover');
         let arc = e.target;
-        console.log(arc);
-        console.log(this.stage.children);
     
         if (this.lastTagLabel && this.lastTagLabel.attachedTag == arc.attachedTag) return;
     

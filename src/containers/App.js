@@ -65,7 +65,7 @@ class App extends Component {
       appendSlice(nowForm);
       toggleState();
     }
-
+    Cookies.remove('notepad');
     Cookies.set('notepad', document.querySelector('.notepadInput').value, {expires: 2});
   }
 
